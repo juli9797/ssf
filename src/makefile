@@ -6,3 +6,5 @@ CXX = g++
 
 all: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(EXEC) $(OBJECTS)
+clean:
+	rm $(EXEC) $(OBJECTS)
