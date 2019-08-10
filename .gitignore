@@ -1,0 +1,9 @@
+# Binarys
+*.out
+
+# Objects
+*.o 
+
+
+# VSCODE BLOAT
+.vscode/
