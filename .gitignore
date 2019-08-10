@@ -3,3 +3,7 @@
 
 # Objects
 *.o 
+
+
+# VSCODE BLOAT
+.vscode/
