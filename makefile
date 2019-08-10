@@ -1,7 +1,7 @@
 
-OBJECTS = main.o
+OBJECTS = src/main.o
 EXEC = main.out
-CXXFLAGS = -Wall -Wextra -std=c++17
+CXXFLAGS = -Wall -Wextra -std=c++17 
 CXX = g++
 
 all: $(OBJECTS)
