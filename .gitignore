@@ -1,0 +1,5 @@
+# Binarys
+*.out
+
+# Objects
+*.o 
