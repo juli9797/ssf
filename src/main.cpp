@@ -3,8 +3,10 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <sstream>
 #include <functional>
 #include <exception>
+#include <algorithm>
 
 #include <unistd.h>
 #include <termios.h>
@@ -53,21 +55,59 @@ class ConsoleScreen{
 	void clear()
 	{
 		write(STDOUT_FILENO, "\x1b[2J", 4);
-  		reset_cursor();
+		reset_cursor();
 	}
 	void reset_cursor()
 	{
 		write(STDOUT_FILENO, "\x1b[H", 3);
 	}
+	void set_cursor(int x, int y)
+	{
+		std::ostringstream oss;
+		oss << "\x1b[" << x+1 << ";" << y+1 << "H";
+		write(STDOUT_FILENO, oss.str().data(), oss.str().size());
+	}
+	void hide_cursor()
+	{
+		write(STDOUT_FILENO, "\x1b[?25l", 6);
+	}
+	void show_cursor()
+	{
+		write(STDOUT_FILENO, "\x1b[?25h", 6);
+	}
 	void draw_base()
 	{
-		clear();
+		// Demo Function
+		std::string buffer;
+		buffer.append("~TEST");
 		for(int i = 0; i < 24; i++){
-			write(STDOUT_FILENO, "~\r\n", 3);
+			buffer.append("~\r\n");
 		}
-		reset_cursor();
+		draw(buffer);
+	}
+	void draw(std::string const& buffer)
+	{
+		hide_cursor();
+		clear();
+		write(STDOUT_FILENO, buffer.data(), buffer.length());
+		set_cursor(c_x, c_y);
+		show_cursor();
+	}
+	void move_cursor(int x, int y)
+	{
+		c_x += x;
+		c_x = std::clamp(c_x, 0, size_x);
+
+		c_y += y;
+		c_y = std::clamp(c_y, 0, size_y);
+
+		set_cursor(c_x, c_y);
 	}
 	private:
+	int size_x = 20;
+	int size_y = 20;
+	int c_x = 10;
+	int c_y = 10;
 };
 
 constexpr char ctrl_key(char const c)
@@ -104,7 +144,7 @@ private:
 	std::unordered_map<char,std::function<void(void)>> callbacks;
 };
 
-struct close_program_t{}; // used to throw to close the program
+struct close_program_ex_t{}; // used to throw to close the program
 
 int main()
 {
@@ -117,7 +157,27 @@ int main()
 
 		input_handler.register_callback('q', []()
 		{
-			throw close_program_t();
+			throw close_program_ex_t();
+		});
+
+		input_handler.register_callback('w', [&]()
+		{
+			screen.move_cursor(-1,0);
+		});
+
+		input_handler.register_callback('a', [&]()
+		{
+			screen.move_cursor(0,-1);
+		});
+
+		input_handler.register_callback('s', [&]()
+		{
+			screen.move_cursor(1,0);
+		});
+
+		input_handler.register_callback('d', [&]()
+		{
+			screen.move_cursor(0,1);
 		});
 
 		screen.draw_base();
@@ -125,7 +185,7 @@ int main()
 		while(true){
 			input_handler.process_key_press();
 		}
-	}catch(close_program_t){
+	}catch(close_program_ex_t){
 		// Makes sure to call all dtors
 		return 0;
 	}
