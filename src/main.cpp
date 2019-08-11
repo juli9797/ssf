@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <functional>
 #include <exception>
@@ -11,12 +12,11 @@
 #include <unistd.h>
 #include <termios.h>
 
-
-
 // Class to change the Console to Raw Mode
 // Ctor enables Raw
 // DTor disables Raw
-class ConsoleRawMode{
+class ConsoleRawMode
+{
 public:
 	ConsoleRawMode()
 	{
@@ -29,7 +29,7 @@ public:
 		new_settings.c_oflag &= ~(OPOST);
 		new_settings.c_cflag |= (CS8);
 		new_settings.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-		new_settings.c_cc[VMIN] = 1; // 1 Byte
+		new_settings.c_cc[VMIN] = 1;  // 1 Byte
 		new_settings.c_cc[VTIME] = 1; // 100ms
 
 		tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_settings);
@@ -38,74 +38,45 @@ public:
 	{
 		tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_settings); // Restore saved settings
 	}
+
 private:
 	struct termios saved_settings; // Saved Console Settings
 };
 
-class ConsoleScreen{
-	public:
+namespace console_command
+{
+constexpr auto clear = "\x1b[2J";
+constexpr auto reset_cursor = "\x1b[H";
+constexpr auto hide_cursor = "\x1b[?25l";
+constexpr auto show_cursor = "\x1b[?25h";
+auto set_cursor(int x, int y)
+{
+	std::ostringstream oss;
+	oss << "\x1b[" << x + 1 << ";" << y + 1 << "H";
+	return oss.str();
+}
+} // namespace console_command
+
+class ConsoleScreen
+{
+public:
 	ConsoleScreen()
 	{
-
 	}
 	~ConsoleScreen()
 	{
-		clear(); // Clear screen on exit
+		*this << console_command::clear
+			  << console_command::reset_cursor; // Clear screen on exit
 	}
-	void clear()
+	ConsoleScreen &operator<<(std::string const buffer)
 	{
-		write(STDOUT_FILENO, "\x1b[2J", 4);
-		reset_cursor();
-	}
-	void reset_cursor()
-	{
-		write(STDOUT_FILENO, "\x1b[H", 3);
-	}
-	void set_cursor(int x, int y)
-	{
-		std::ostringstream oss;
-		oss << "\x1b[" << x+1 << ";" << y+1 << "H";
-		write(STDOUT_FILENO, oss.str().data(), oss.str().size());
-	}
-	void hide_cursor()
-	{
-		write(STDOUT_FILENO, "\x1b[?25l", 6);
-	}
-	void show_cursor()
-	{
-		write(STDOUT_FILENO, "\x1b[?25h", 6);
-	}
-	void draw_base()
-	{
-		// Demo Function
-		std::string buffer;
-		buffer.append("~TEST");
-		for(int i = 0; i < 24; i++){
-			buffer.append("~\r\n");
-		}
-		draw(buffer);
-	}
-	void draw(std::string const& buffer)
-	{
-		hide_cursor();
-		clear();
 		write(STDOUT_FILENO, buffer.data(), buffer.length());
-		set_cursor(c_x, c_y);
-		show_cursor();
+		return *this;
 	}
-	void move_cursor(int x, int y)
-	{
-		c_x += x;
-		c_x = std::clamp(c_x, 0, size_x);
 
-		c_y += y;
-		c_y = std::clamp(c_y, 0, size_y);
-
-		set_cursor(c_x, c_y);
-	}
-	private:
+private:
 	int size_x = 20;
-	int size_y = 20;
+	int size_y = 100;
 	int c_x = 10;
 	int c_y = 10;
 };
@@ -115,14 +86,18 @@ constexpr char ctrl_key(char const c)
 	return c & 0x1f;
 }
 
-class ConsoleInputHandler{
+class ConsoleInputHandler
+{
 public:
 	void process_key_press()
 	{
 		auto c = read_key_blocking();
-		try{
+		try
+		{
 			callbacks.at(c)(); // Execute callback
-		}catch(const std::out_of_range &e){
+		}
+		catch (const std::out_of_range &e)
+		{
 			std::cout << "not found";
 		}
 	}
@@ -134,58 +109,107 @@ public:
 
 protected:
 	auto read_key_blocking() -> char
-		{
-			char c;
-			while(read(STDIN_FILENO, &c, 1) != 1)
-				;
-			return c;
-		}
+	{
+		char c;
+		while (read(STDIN_FILENO, &c, 1) != 1)
+			;
+		return c;
+	}
+
 private:
-	std::unordered_map<char,std::function<void(void)>> callbacks;
+	std::unordered_map<char, std::function<void(void)>> callbacks;
 };
 
-struct close_program_ex_t{}; // used to throw to close the program
+// Build a full page
+// Use a string to receive data
+class ConsolePageBuilder
+{
+public:
+	ConsolePageBuilder()
+	{
+	}
+	ConsolePageBuilder &add(std::string s)
+	{
+		stream_buffer << s;
+		return *this;
+	}
+	ConsolePageBuilder &add_line(std::string s)
+	{
+		stream_buffer << s << "\r\n";
+		return *this;
+	}
+	ConsolePageBuilder &add_default_start()
+	{
+		add(console_command::hide_cursor);
+		add(console_command::reset_cursor);
+		add(console_command::clear);
+		return *this;
+	}
+	ConsolePageBuilder &add_default_end()
+	{
+		add(console_command::show_cursor);
+		return *this;
+	}
+	auto str()
+	{
+		return stream_buffer.str();
+	}
+
+private:
+	std::ostringstream stream_buffer;
+};
+
+struct close_program_ex_t
+{
+}; // used to throw to close the program
 
 int main()
 {
-	try{
+	try
+	{
 		ConsoleRawMode console_settings; // Enables Raw Mode
 
 		ConsoleInputHandler input_handler;
 
 		ConsoleScreen screen;
 
-		input_handler.register_callback('q', []()
-		{
+		input_handler.register_callback('q', []() {
 			throw close_program_ex_t();
 		});
 
-		input_handler.register_callback('w', [&]()
-		{
-			screen.move_cursor(-1,0);
+		input_handler.register_callback('w', [&]() {
+			//screen.move_cursor(-1, 0);
 		});
 
-		input_handler.register_callback('a', [&]()
-		{
-			screen.move_cursor(0,-1);
+		input_handler.register_callback('a', [&]() {
+			//screen.move_cursor(0, -1);
 		});
 
-		input_handler.register_callback('s', [&]()
-		{
-			screen.move_cursor(1,0);
+		input_handler.register_callback('s', [&]() {
+			//screen.move_cursor(1, 0);
 		});
 
-		input_handler.register_callback('d', [&]()
-		{
-			screen.move_cursor(0,1);
+		input_handler.register_callback('d', [&]() {
+			//screen.move_cursor(0, 1);
 		});
 
-		screen.draw_base();
+		ConsolePageBuilder page;
 
-		while(true){
+		page.add_default_start()
+			.add_line("First Line")
+			.add_line("Second")
+			.add(console_command::set_cursor(1, 10))
+			.add_default_end();
+
+		screen << page.str();
+
+		while (true)
+		{
 			input_handler.process_key_press();
 		}
-	}catch(close_program_ex_t){
+	}
+	catch (close_program_ex_t)
+	{
 		// Makes sure to call all dtors
 		return 0;
 	}
