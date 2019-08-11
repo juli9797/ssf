@@ -45,10 +45,13 @@ private:
 
 namespace console_command
 {
+constexpr auto new_line = "\r\n";
 constexpr auto clear = "\x1b[2J";
 constexpr auto reset_cursor = "\x1b[H";
 constexpr auto hide_cursor = "\x1b[?25l";
 constexpr auto show_cursor = "\x1b[?25h";
+constexpr auto bold_enable = "\033[1m";
+constexpr auto bold_disable = "\033[0m";
 auto set_cursor(int x, int y)
 {
 	std::ostringstream oss;
@@ -159,6 +162,68 @@ private:
 	std::ostringstream stream_buffer;
 };
 
+class ConsolePage
+{
+public:
+	ConsolePage(int rows, int cols, int space = 25) : spacing(space)
+	{
+		entries.resize(rows);
+		for (auto &row : entries)
+		{
+			row.resize(cols);
+		}
+	}
+	auto str()
+	{
+		ConsolePageBuilder p;
+		p.add_default_start();
+		int row_counter = 0;
+		for (auto &row : entries)
+		{
+			int index = 0;
+			if (row_counter == selection)
+			{
+				p.add(console_command::bold_enable);
+			}
+			for (auto &s : row)
+			{
+				p.add(console_command::set_cursor(row_counter, index * spacing));
+				p.add(s);
+				index++;
+			}
+			if (row_counter == selection)
+			{
+				p.add(console_command::bold_disable);
+			}
+			row_counter++;
+		}
+		return p.str();
+	}
+	void add_entry(int row, int col, std::string s)
+	{
+		entries[row][col] = s;
+	}
+	void selection_incr()
+	{
+		if (selection < static_cast<int>(entries.size()) - 1)
+		{
+			selection++;
+		}
+	}
+	void selection_decr()
+	{
+		if (selection > 0)
+		{
+			selection--;
+		}
+	}
+
+private:
+	int selection = 0;
+	const int spacing;
+	std::vector<std::vector<std::string>> entries;
+};
+
 struct close_program_ex_t
 {
 }; // used to throw to close the program
@@ -173,35 +238,37 @@ int main()
 
 		ConsoleScreen screen;
 
+		ConsolePage page(4, 3);
+		page.add_entry(0, 0, "Row1");
+		page.add_entry(0, 1, "Row1 Sec");
+		page.add_entry(1, 0, "Row2");
+		page.add_entry(1, 1, "Row2 Sec");
+		page.add_entry(2, 0, "Row3");
+		page.add_entry(2, 1, "Row3 Sec");
+		page.add_entry(3, 0, "Row4");
+		page.add_entry(3, 1, "Row4 Sec");
+
+		screen << page.str();
+
 		input_handler.register_callback('q', []() {
 			throw close_program_ex_t();
 		});
 
-		input_handler.register_callback('w', [&]() {
-			//screen.move_cursor(-1, 0);
+		input_handler.register_callback('j', [&]() {
+			page.selection_incr();
+			screen << page.str();
 		});
 
-		input_handler.register_callback('a', [&]() {
-			//screen.move_cursor(0, -1);
+		input_handler.register_callback('k', [&]() {
+			page.selection_decr();
+			screen << page.str();
 		});
 
-		input_handler.register_callback('s', [&]() {
-			//screen.move_cursor(1, 0);
+		input_handler.register_callback('h', [&]() {
 		});
 
-		input_handler.register_callback('d', [&]() {
-			//screen.move_cursor(0, 1);
+		input_handler.register_callback('l', [&]() {
 		});
-
-		ConsolePageBuilder page;
-
-		page.add_default_start()
-			.add_line("First Line")
-			.add_line("Second")
-			.add(console_command::set_cursor(1, 10))
-			.add_default_end();
-
-		screen << page.str();
 
 		while (true)
 		{
