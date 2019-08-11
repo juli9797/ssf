@@ -1,5 +1,5 @@
 
-OBJECTS = src/main.o
+OBJECTS = src/main.o src/filetree.o
 EXEC = main.out
 CXXFLAGS = -Wall -Wextra -std=c++17 
 CXX = g++
@@ -7,4 +7,4 @@ CXX = g++
 all: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(EXEC) $(OBJECTS)
 clean:
-	rm $(EXEC) $(OBJECTS)
+	rm $(EXEC) $(OBJECTS
