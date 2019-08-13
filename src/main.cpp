@@ -46,12 +46,14 @@ private:
 namespace console_command
 {
 constexpr auto new_line = "\r\n";
-constexpr auto clear = "\x1b[2J";
+//constexpr auto clear = "\x1b[2J"; // doesnt really clear
+constexpr auto clear = "\033c";
 constexpr auto reset_cursor = "\x1b[H";
 constexpr auto hide_cursor = "\x1b[?25l";
 constexpr auto show_cursor = "\x1b[?25h";
 constexpr auto bold_enable = "\033[1m";
 constexpr auto bold_disable = "\033[0m";
+constexpr auto default_start = "\x1b[?25l\x1b[H\033c";
 auto set_cursor(int x, int y)
 {
 	std::ostringstream oss;
@@ -123,45 +125,6 @@ private:
 	std::unordered_map<char, std::function<void(void)>> callbacks;
 };
 
-// Build a full page
-// Use a string to receive data
-class ConsolePageBuilder
-{
-public:
-	ConsolePageBuilder()
-	{
-	}
-	ConsolePageBuilder &add(std::string s)
-	{
-		stream_buffer << s;
-		return *this;
-	}
-	ConsolePageBuilder &add_line(std::string s)
-	{
-		stream_buffer << s << "\r\n";
-		return *this;
-	}
-	ConsolePageBuilder &add_default_start()
-	{
-		add(console_command::hide_cursor);
-		add(console_command::reset_cursor);
-		add(console_command::clear);
-		return *this;
-	}
-	ConsolePageBuilder &add_default_end()
-	{
-		add(console_command::show_cursor);
-		return *this;
-	}
-	auto str()
-	{
-		return stream_buffer.str();
-	}
-
-private:
-	std::ostringstream stream_buffer;
-};
-
 class ConsolePage
 {
 public:
@@ -175,25 +138,25 @@ public:
 	}
 	auto str()
 	{
-		ConsolePageBuilder p;
-		p.add_default_start();
+		std::ostringstream p;
+		p << console_command::default_start;
 		int row_counter = 0;
 		for (auto &row : entries)
 		{
 			int index = 0;
 			if (row_counter == selection)
 			{
-				p.add(console_command::bold_enable);
+				p << console_command::bold_enable;
 			}
 			for (auto &s : row)
 			{
-				p.add(console_command::set_cursor(row_counter, index * spacing));
-				p.add(s);
+				p << console_command::set_cursor(row_counter, index * spacing);
+				p << s;
 				index++;
 			}
 			if (row_counter == selection)
 			{
-				p.add(console_command::bold_disable);
+				p << console_command::bold_disable;
 			}
 			row_counter++;
 		}
@@ -262,12 +225,6 @@ int main()
 		input_handler.register_callback('k', [&]() {
 			page.selection_decr();
 			screen << page.str();
-		});
-
-		input_handler.register_callback('h', [&]() {
-		});
-
-		input_handler.register_callback('l', [&]() {
 		});
 
 		while (true)
