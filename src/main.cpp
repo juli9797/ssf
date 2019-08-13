@@ -128,43 +128,41 @@ private:
 class ConsolePage
 {
 public:
-	ConsolePage(int rows, int cols, int space = 25) : spacing(space)
+	ConsolePage(int space = 15) : spacing(space)
 	{
-		entries.resize(rows);
-		for (auto &row : entries)
-		{
-			row.resize(cols);
-		}
 	}
 	auto str()
 	{
 		std::ostringstream p;
 		p << console_command::default_start;
-		int row_counter = 0;
-		for (auto &row : entries)
+		int col_counter = 0;
+		for (auto &col : entries)
 		{
 			int index = 0;
-			if (row_counter == selection)
+			for (auto &s : col)
 			{
-				p << console_command::bold_enable;
-			}
-			for (auto &s : row)
-			{
-				p << console_command::set_cursor(row_counter, index * spacing);
-				p << s;
+				p << console_command::set_cursor(index, col_counter * spacing);
+				if (index == selection && col_counter == static_cast<int>(col.size() / 2))
+				{
+					p << console_command::bold_enable;
+					p << s;
+					p << console_command::bold_disable;
+				}
+				else
+				{
+					p << s;
+				}
+
 				index++;
 			}
-			if (row_counter == selection)
-			{
-				p << console_command::bold_disable;
-			}
-			row_counter++;
+
+			col_counter++;
 		}
 		return p.str();
 	}
-	void add_entry(int row, int col, std::string s)
+	void add_col(std::vector<std::string> c)
 	{
-		entries[row][col] = s;
+		entries.push_back(c);
 	}
 	void selection_incr()
 	{
@@ -201,15 +199,10 @@ int main()
 
 		ConsoleScreen screen;
 
-		ConsolePage page(4, 3);
-		page.add_entry(0, 0, "Row1");
-		page.add_entry(0, 1, "Row1 Sec");
-		page.add_entry(1, 0, "Row2");
-		page.add_entry(1, 1, "Row2 Sec");
-		page.add_entry(2, 0, "Row3");
-		page.add_entry(2, 1, "Row3 Sec");
-		page.add_entry(3, 0, "Row4");
-		page.add_entry(3, 1, "Row4 Sec");
+		ConsolePage page;
+		page.add_col({"first", "second"});
+		page.add_col({"third", "fourth"});
+		page.add_col({"fifth", "sixth"});
 
 		screen << page.str();
 
