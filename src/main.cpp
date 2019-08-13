@@ -1,9 +1,7 @@
-#include <iostream>
 #include <type_traits>
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include <string_view>
 #include <sstream>
 #include <functional>
 #include <exception>
@@ -22,7 +20,7 @@ public:
 	{
 		tcgetattr(STDIN_FILENO, &saved_settings); // Save settings to restore later
 
-		struct termios new_settings = saved_settings;
+		auto new_settings = saved_settings;
 
 		// Flags from https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
 		new_settings.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
@@ -103,7 +101,7 @@ public:
 		}
 		catch (const std::out_of_range &e)
 		{
-			std::cout << "not found";
+			// Debug Out
 		}
 	}
 
@@ -142,7 +140,7 @@ public:
 			for (auto &s : col)
 			{
 				p << console_command::set_cursor(index, col_counter * spacing);
-				if (index == selection && col_counter == static_cast<int>(col.size() / 2))
+				if (index == selection && col_counter == active_col)
 				{
 					p << console_command::bold_enable;
 					p << s;
@@ -158,6 +156,7 @@ public:
 
 			col_counter++;
 		}
+		p << console_command::hide_cursor;
 		return p.str();
 	}
 	void add_col(std::vector<std::string> c)
@@ -166,7 +165,11 @@ public:
 	}
 	void selection_incr()
 	{
-		if (selection < static_cast<int>(entries.size()) - 1)
+		if (static_cast<int>(entries.size()) <= active_col)
+		{
+			selection = 0;
+		}
+		if (selection < static_cast<int>(entries.at(active_col).size()) - 1)
 		{
 			selection++;
 		}
@@ -181,6 +184,7 @@ public:
 
 private:
 	int selection = 0;
+	int active_col = 1;
 	const int spacing;
 	std::vector<std::vector<std::string>> entries;
 };
@@ -200,9 +204,9 @@ int main()
 		ConsoleScreen screen;
 
 		ConsolePage page;
-		page.add_col({"first", "second"});
-		page.add_col({"third", "fourth"});
-		page.add_col({"fifth", "sixth"});
+		page.add_col({"first", "second", "third"});
+		page.add_col({"third", "fourth", "third", "third", "third"});
+		page.add_col({"fifth", "sixth", "third", "fifth", "sixth", "third"});
 
 		screen << page.str();
 
