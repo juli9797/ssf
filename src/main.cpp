@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <unistd.h>
+#include <iostream>
 #include <termios.h>
 
 // Class to change the Console to Raw Mode
@@ -73,7 +74,8 @@ public:
 	}
 	ConsoleScreen &operator<<(std::string const buffer)
 	{
-		write(STDOUT_FILENO, buffer.data(), buffer.length());
+		//write(STDOUT_FILENO, buffer.data(), buffer.length());
+		std::cout << buffer;
 		return *this;
 	}
 
@@ -114,8 +116,7 @@ protected:
 	auto read_key_blocking() -> char
 	{
 		char c;
-		while (read(STDIN_FILENO, &c, 1) != 1)
-			;
+		std::cin.get(c);
 		return c;
 	}
 
