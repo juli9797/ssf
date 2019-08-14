@@ -72,7 +72,7 @@ public:
 		*this << console_command::clear
 			  << console_command::reset_cursor; // Clear screen on exit
 	}
-	ConsoleScreen &operator<<(std::string const buffer)
+	ConsoleScreen const &operator<<(std::string const buffer) const
 	{
 		std::cout << buffer;
 		return *this;
@@ -91,7 +91,7 @@ class ConsoleInputHandler
 public:
 	using callback_t = std::function<void(void)>;
 
-	void process_key_press()
+	void process_key_press() const
 	{
 		auto c = read_key_blocking();
 		try
@@ -110,7 +110,7 @@ public:
 	}
 
 protected:
-	auto read_key_blocking() -> char
+	auto read_key_blocking() const -> char
 	{
 		return std::cin.get();
 	}
@@ -125,15 +125,15 @@ public:
 	ConsolePage(int space = 15) : spacing(space)
 	{
 	}
-	auto str()
+	auto str() const
 	{
 		std::ostringstream p;
 		p << console_command::default_start;
 		int col_counter = 0;
-		for (auto &col : entries)
+		for (auto const &col : entries)
 		{
 			int index = 0;
-			for (auto &s : col)
+			for (auto const &s : col)
 			{
 				p << console_command::set_cursor(index, col_counter * spacing);
 				if (index == selection && col_counter == active_col)
