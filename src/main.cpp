@@ -45,7 +45,7 @@ private:
 namespace console_command
 {
 constexpr auto new_line = "\r\n";
-//constexpr auto clear = "\x1b[2J"; // doesnt really clear
+constexpr auto weak_clear = "\x1b[2J"; // doesnt really clear
 constexpr auto clear = "\033c";
 constexpr auto reset_cursor = "\x1b[H";
 constexpr auto hide_cursor = "\x1b[?25l";
@@ -74,16 +74,11 @@ public:
 	}
 	ConsoleScreen &operator<<(std::string const buffer)
 	{
-		//write(STDOUT_FILENO, buffer.data(), buffer.length());
 		std::cout << buffer;
 		return *this;
 	}
 
 private:
-	int size_x = 20;
-	int size_y = 100;
-	int c_x = 10;
-	int c_y = 10;
 };
 
 constexpr char ctrl_key(char const c)
@@ -94,6 +89,8 @@ constexpr char ctrl_key(char const c)
 class ConsoleInputHandler
 {
 public:
+	using callback_t = std::function<void(void)>;
+
 	void process_key_press()
 	{
 		auto c = read_key_blocking();
@@ -107,7 +104,7 @@ public:
 		}
 	}
 
-	void register_callback(char c, std::function<void(void)> callable)
+	void register_callback(char c, callback_t callable)
 	{
 		callbacks[c] = callable;
 	}
@@ -115,13 +112,11 @@ public:
 protected:
 	auto read_key_blocking() -> char
 	{
-		char c;
-		std::cin.get(c);
-		return c;
+		return std::cin.get();
 	}
 
 private:
-	std::unordered_map<char, std::function<void(void)>> callbacks;
+	std::unordered_map<char, callback_t> callbacks;
 };
 
 class ConsolePage
@@ -190,9 +185,10 @@ private:
 	std::vector<std::vector<std::string>> entries;
 };
 
+// used to throw to close the program
 struct close_program_ex_t
 {
-}; // used to throw to close the program
+};
 
 int main()
 {
