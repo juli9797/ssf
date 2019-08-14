@@ -11,6 +11,8 @@
 #include <iostream>
 #include <termios.h>
 
+#include "logger.hpp"
+
 // Class to change the Console to Raw Mode
 // Ctor enables Raw
 // DTor disables Raw
@@ -189,10 +191,16 @@ struct close_program_ex_t
 {
 };
 
+// Exception from the no globals rule bc log
+// Only needs to be instantiated in main.cpp
+Logger logger;
+
 int main()
 {
 	try
 	{
+		logger << "Started\n";
+
 		ConsoleRawMode console_settings; // Enables Raw Mode
 
 		ConsoleInputHandler input_handler;
@@ -219,6 +227,8 @@ int main()
 			page.selection_decr();
 			screen << page.str();
 		});
+
+		logger << "Main keypress loop\n";
 
 		while (true)
 		{
