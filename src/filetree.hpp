@@ -19,43 +19,12 @@ public:
     Filetree()
     {
         log << "init path: " << std::filesystem::current_path() << "\n";
-        current_path = std::filesystem::current_path(); //initialize current path
-        current_path = std::filesystem::absolute(current_path);
+        current_path = std::filesystem::absolute(std::filesystem::current_path());
     }
     ~Filetree()
     {
-        log << "filetree DESTROYED!!!11elf"
-            << "\n";
     }
-    //
-    // This function obtains the directory contents relative to the working directory
-    //
-    auto get_folder_contents(int layer = 0)
-    {
-        log << "get folder Path: "
-            << "\n";
-        std::filesystem::path path = current_path;
-        for (int i = 0; i <= layer; i++)
-        {
-            ssf::log << path << "\n";
-            if (path.has_parent_path())
-            {
-                path = path.parent_path();
-            }
-            else
-            {
-                //idk what to do here
-            }
-        }
 
-        auto di = std::filesystem::directory_iterator(path);
-        //[DEBUG] list file names
-        for (auto &p : di)
-        {
-            log << p << "\n";
-        }
-        return di;
-    }
     auto move_layer_up()
     {
         if (current_path.has_parent_path())
@@ -71,26 +40,70 @@ public:
 
     void move_up() {}
     void move_down() {}
-    void move_left() {}
+    void move_left()
+    {
+        if (current_path.has_parent_path())
+        {
+            current_path = current_path.parent_path();
+        }
+    }
     void move_right() {}
 
     auto get_current()
     {
-        return std::vector<std::string>({"Folder1", "Folder2"});
+        auto di = std::filesystem::directory_iterator(current_path);
+        std::vector<std::string> res;
+        for (auto &d : di)
+        {
+            res.push_back(d.path().filename().string());
+        }
+        return res;
     }
 
     auto get_left()
     {
-        return std::vector<std::string>({"Parent1", "Parent2"});
+        auto temp = current_path;
+        if (temp.has_parent_path())
+        {
+            temp = temp.parent_path();
+            auto di = std::filesystem::directory_iterator(temp);
+            std::vector<std::string> res;
+            for (auto &d : di)
+            {
+                res.push_back(d.path().filename().string());
+            }
+            return res;
+        }
+        return std::vector<std::string>();
     }
 
     auto get_right()
     {
-        return std::vector<std::string>({"Child1", "Child2"});
+        //return std::vector<std::string>({"Child1", "Child2"});
+        auto di = std::filesystem::directory_iterator(current_path);
+        for (int i = 0; i < selection; i++)
+        {
+            di++;
+        }
+        auto selected = *di;
+        log << "GET RIGHT: " << selected.path().filename().string() << "\n";
+        if (selected.is_directory())
+        {
+            auto temp_path = current_path;
+            temp_path = temp_path / selected.path().filename();
+            auto di = std::filesystem::directory_iterator(temp_path);
+            std::vector<std::string> res;
+            for (auto &d : di)
+            {
+                res.push_back(d.path().filename().string());
+            }
+            return res;
+        }
+        return std::vector<std::string>();
     }
 
 private:
-    // selection
+    int selection = 1;
     std::filesystem::path current_path;
 };
 
