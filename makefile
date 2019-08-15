@@ -1,5 +1,5 @@
 
-OBJECTS = src/main.o
+OBJECTS = src/main.o src/log.o
 EXEC = ssf
 CXXFLAGS = -Wall -Wextra -std=c++2a
 CXX = g++
