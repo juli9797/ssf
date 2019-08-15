@@ -103,7 +103,7 @@ public:
 		}
 		catch (const std::out_of_range &e)
 		{
-			// Debug Out
+			logger << LogLevel::warning << "key " << c << " not registered\n";
 		}
 	}
 
