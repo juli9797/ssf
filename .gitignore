@@ -1,5 +1,6 @@
 # Binarys
 *.out
+ssf
 
 # Objects
 *.o 

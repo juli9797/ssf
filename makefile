@@ -1,6 +1,6 @@
 
 OBJECTS = src/main.o
-EXEC = main.out
+EXEC = ssf
 CXXFLAGS = -Wall -Wextra -std=c++2a
 CXX = g++
 
