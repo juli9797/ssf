@@ -3,6 +3,8 @@
 #include "console_input_handler.hpp"
 #include "console_page.hpp"
 
+#include "filetree.hpp"
+
 #include "log.hpp"
 #include "close_programm_exception.hpp"
 
