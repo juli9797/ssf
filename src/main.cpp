@@ -21,6 +21,10 @@ int main()
 		ssf::ConsoleScreen screen;
 
 		ssf::ConsolePage page;
+
+		ssf::Filetree tree;
+		tree.get_folder_contents(4);
+
 		page.add_col({"first", "second", "third"});
 		page.add_col({"third", "fourth", "third", "third", "third"});
 		page.add_col({"fifth", "sixth", "third", "fifth", "sixth", "third"});

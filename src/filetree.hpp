@@ -10,16 +10,16 @@
 namespace ssf
 {
 
-/* 
- * This class is supposed to handle all the filesystem interactions using std::filesystem
- */
+//
+// This class is supposed to handle all the filesystem interactions using std::filesystem
+//
 class Filetree
 {
 public:
     Filetree()
     {
         log << "init path: " << std::filesystem::current_path() << "\n";
-        current_path = ""; //initialize current path
+        current_path = std::filesystem::current_path(); //initialize current path
         current_path = std::filesystem::absolute(current_path);
     }
     ~Filetree()
@@ -27,9 +27,9 @@ public:
         log << "filetree DESTROYED!!!11elf"
             << "\n";
     }
-    /*
-		 * This function obtains the directory contents relative to the working directory
-		 */
+    //
+    // This function obtains the directory contents relative to the working directory
+    //
     auto get_folder_contents(int layer = 0)
     {
         log << "get folder Path: "
