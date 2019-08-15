@@ -5,6 +5,9 @@
 #include <chrono>
 #include <ctime>
 
+namespace ssf
+{
+
 enum class LogLevel
 {
     debug,
@@ -12,10 +15,10 @@ enum class LogLevel
     error
 };
 
-class Logger
+class Log
 {
 public:
-    Logger()
+    Log()
     {
         logfile.open("logfile.txt", std::ofstream::out | std::ofstream::trunc);
         logfile << "SSF Log: ";
@@ -24,19 +27,19 @@ public:
                 << "\n";
     }
 
-    ~Logger()
+    ~Log()
     {
         logfile.close();
     }
 
     template <typename T>
-    Logger &operator<<(T const &t)
+    Log &operator<<(T const &t)
     {
         logfile << t;
         return *this;
     }
 
-    Logger &operator<<(LogLevel l)
+    Log &operator<<(LogLevel l)
     {
         switch (l)
         {
@@ -57,4 +60,6 @@ private:
     std::ofstream logfile;
 };
 
-extern Logger logger;
+extern Log log;
+
+} // namespace ssf

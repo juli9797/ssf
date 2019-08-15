@@ -103,7 +103,7 @@ public:
 		}
 		catch (const std::out_of_range &e)
 		{
-			logger << LogLevel::warning << "key " << c << " not registered\n";
+			ssf::log << ssf::LogLevel::warning << "key " << c << " not registered\n";
 		}
 	}
 
@@ -193,13 +193,13 @@ struct close_program_ex_t
 
 // Exception from the no globals rule bc log
 // Only needs to be instantiated in main.cpp
-Logger logger;
+ssf::Log ssf::log;
 
 int main()
 {
 	try
 	{
-		logger << "Started\n";
+		ssf::log << "Started\n";
 
 		ConsoleRawMode console_settings; // Enables Raw Mode
 
@@ -228,7 +228,7 @@ int main()
 			screen << page.str();
 		});
 
-		logger << "Main keypress loop\n";
+		ssf::log << "Main keypress loop\n";
 
 		while (true)
 		{
