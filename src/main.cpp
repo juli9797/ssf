@@ -3,6 +3,8 @@
 #include "console_input_handler.hpp"
 #include "console_page.hpp"
 
+#include "filetree.hpp"
+
 #include "log.hpp"
 #include "close_programm_exception.hpp"
 
@@ -18,10 +20,13 @@ int main()
 
 		ssf::ConsoleScreen screen;
 
-		ssf::ConsolePage page;
-		page.add_col({"first", "second", "third"});
-		page.add_col({"third", "fourth", "third", "third", "third"});
-		page.add_col({"fifth", "sixth", "third", "fifth", "sixth", "third"});
+		ssf::ConsolePage page(35);
+
+		ssf::Filetree tree;
+
+		page.add_col(tree.get_left());
+		page.add_col(tree.get_current());
+		page.add_col(tree.get_right());
 
 		screen << page.str();
 
@@ -31,11 +36,49 @@ int main()
 
 		input_handler.register_callback('j', [&]() {
 			page.selection_incr();
+			page.clear_entries();
+
+			tree.move_down();
+			page.add_col(tree.get_left());
+			page.add_col(tree.get_current());
+			page.add_col(tree.get_right());
+
 			screen << page.str();
 		});
 
 		input_handler.register_callback('k', [&]() {
 			page.selection_decr();
+			page.clear_entries();
+
+			tree.move_up();
+			page.add_col(tree.get_left());
+			page.add_col(tree.get_current());
+			page.add_col(tree.get_right());
+
+			screen << page.str();
+		});
+
+		input_handler.register_callback('h', [&]() {
+			page.reset_selection();
+			page.clear_entries();
+
+			tree.move_left();
+			page.add_col(tree.get_left());
+			page.add_col(tree.get_current());
+			//page.add_col(tree.get_right());
+
+			screen << page.str();
+		});
+
+		input_handler.register_callback('l', [&]() {
+			page.reset_selection();
+			page.clear_entries();
+
+			tree.move_right();
+			page.add_col(tree.get_left());
+			page.add_col(tree.get_current());
+			//page.add_col(tree.get_right());
+
 			screen << page.str();
 		});
 
