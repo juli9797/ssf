@@ -22,7 +22,7 @@ public:
     {
         std::ostringstream p;
         p << c_cmd::clear;
-
+        p << c_cmd::hide_cursor;
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
             auto col = entries.at(col_index);
@@ -39,7 +39,6 @@ public:
                 }
             }
         }
-        p << c_cmd::hide_cursor;
         return p.str();
     }
 
@@ -69,7 +68,7 @@ public:
     }
 
 private:
-    unsigned selection = 0u;
+    unsigned selection = 0;
     unsigned active_col = 1;
     const int spacing;
     std::vector<std::vector<std::string>> entries;
