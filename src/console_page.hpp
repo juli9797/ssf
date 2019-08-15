@@ -68,6 +68,16 @@ public:
         }
     }
 
+    void clear_entries()
+    {
+        entries.resize(0);
+    }
+
+    void reset_selection()
+    {
+        selection = 0;
+    }
+
 private:
     unsigned selection = 0u;
     unsigned active_col = 1;

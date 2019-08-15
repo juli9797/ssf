@@ -34,20 +34,40 @@ public:
             log << "parent Path : " << current_path << "\n";
         }
     }
-    auto move_to_dir(std::filesystem::path dir)
-    {
-    }
 
-    void move_up() {}
-    void move_down() {}
+    void move_up()
+    {
+        //  Sanitize
+        selection--;
+    }
+    void move_down()
+    {
+        // Sanitize
+        selection++;
+    }
     void move_left()
     {
         if (current_path.has_parent_path())
         {
             current_path = current_path.parent_path();
+            log << "PATH " << current_path.string() << "\n";
+            selection = 0;
         }
     }
-    void move_right() {}
+    void move_right()
+    {
+        auto di = std::filesystem::directory_iterator(current_path);
+        for (int i = 0; i < selection; i++)
+        {
+            di++;
+        }
+        auto selected = *di;
+        if (selected.is_directory())
+        {
+            current_path = current_path / selected.path().filename();
+            selection = 0;
+        }
+    }
 
     auto get_current()
     {
@@ -79,7 +99,6 @@ public:
 
     auto get_right()
     {
-        //return std::vector<std::string>({"Child1", "Child2"});
         auto di = std::filesystem::directory_iterator(current_path);
         for (int i = 0; i < selection; i++)
         {
@@ -103,7 +122,7 @@ public:
     }
 
 private:
-    int selection = 1;
+    int selection = 0;
     std::filesystem::path current_path;
 };
 
