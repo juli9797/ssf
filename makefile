@@ -9,3 +9,4 @@ all: $(OBJECTS)
 clean:
 	rm $(EXEC)
 	rm src/*.o
+fresh: clean all
