@@ -44,8 +44,11 @@ public:
     }
     void move_down()
     {
+	auto di = std::filesystem::directory_iterator(current_path);
         // Sanitize
+	if(selection < std::distance(std::filesystem::begin(di),std::filesystem::end(di))){
         selection++;
+	}
     }
     void move_left()
     {
