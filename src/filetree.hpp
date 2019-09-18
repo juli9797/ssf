@@ -88,6 +88,10 @@ public:
         }
         return res;
     }
+    auto get_selection()
+    {
+	    return selection;
+    }
 
     auto get_left()
     {
