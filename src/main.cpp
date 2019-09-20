@@ -35,49 +35,53 @@ int main()
 		});
 
 		input_handler.register_callback('j', [&]() {
-			page.selection_incr();
-			page.clear_entries();
-
 			tree.move_down();
+
+			page.clear_entries();
 			page.add_col(tree.get_left());
 			page.add_col(tree.get_current());
 			page.add_col(tree.get_right());
+
+			page.set_selection(tree.get_selection());
 
 			screen << page.str();
 		});
 
 		input_handler.register_callback('k', [&]() {
-			page.selection_decr();
-			page.clear_entries();
-
 			tree.move_up();
+
+			page.clear_entries();
 			page.add_col(tree.get_left());
 			page.add_col(tree.get_current());
 			page.add_col(tree.get_right());
+
+			page.set_selection(tree.get_selection());
 
 			screen << page.str();
 		});
 
 		input_handler.register_callback('h', [&]() {
-			page.reset_selection();
-			page.clear_entries();
-
 			tree.move_left();
+
+			page.clear_entries();
 			page.add_col(tree.get_left());
 			page.add_col(tree.get_current());
-			//page.add_col(tree.get_right());
+			page.add_col(tree.get_right());
+
+			page.set_selection(tree.get_selection());
 
 			screen << page.str();
 		});
 
 		input_handler.register_callback('l', [&]() {
-			page.reset_selection();
-			page.clear_entries();
-
 			tree.move_right();
+
+			page.clear_entries();
 			page.add_col(tree.get_left());
 			page.add_col(tree.get_current());
-			//page.add_col(tree.get_right());
+			page.add_col(tree.get_right());
+
+			page.set_selection(tree.get_selection());
 
 			screen << page.str();
 		});

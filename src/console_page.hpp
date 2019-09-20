@@ -47,34 +47,14 @@ public:
         entries.push_back(c);
     }
 
-    void selection_incr()
+    void set_selection(int s)
     {
-        if (entries.size() <= active_col)
-        {
-            selection = 0;
-        }
-        if (selection < entries.at(active_col).size() - 1)
-        {
-            selection++;
-        }
-    }
-
-    void selection_decr()
-    {
-        if (selection > 0)
-        {
-            selection--;
-        }
+        selection = s;
     }
 
     void clear_entries()
     {
         entries.resize(0);
-    }
-
-    void reset_selection()
-    {
-        selection = 0;
     }
 
 private:
