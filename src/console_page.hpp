@@ -31,7 +31,7 @@ public:
                 p << c_cmd::set_cursor(index, col_index * spacing);
                 if (index == selection && col_index == active_col)
                 {
-                    p << c_cmd::bold_enable << col.at(index) << c_cmd::bold_disable;
+                    p << c_cmd::color::blue << col.at(index) << c_cmd::color::reset;
                 }
                 else
                 {

@@ -16,6 +16,13 @@ constexpr auto show_cursor = "\x1b[?25h";
 constexpr auto bold_enable = "\033[1m";
 constexpr auto bold_disable = "\033[0m";
 constexpr auto default_start = "\x1b[?25l\x1b[H\033c";
+
+namespace color
+{
+constexpr auto blue = "\u001b[44m";
+constexpr auto reset = "\u001b[0m";
+} // namespace color
+
 auto set_cursor(int x, int y)
 {
     std::ostringstream oss;
