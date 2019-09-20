@@ -38,28 +38,37 @@ public:
     void move_up()
     {
         //  Sanitize
-        selection--;
+	if(selection != 0){
+        	selection--;
+	}
     }
     void move_down()
     {
+	auto di = std::filesystem::directory_iterator(current_path);
         // Sanitize
+	int dist = std::distance(std::filesystem::begin(di),std::filesystem::end(di));
+	if(selection < dist-1){
         selection++;
+	}
     }
     void move_left()
     {
-        if (current_path.has_parent_path())
+	
+	
+        if (current_path.has_relative_path())
         {
             current_path = current_path.parent_path();
-            log << "PATH " << current_path.string() << "\n";
             selection = 0;
-        }
+        }else{
+		//has no relative path -> in the root dir	
+	}
     }
     void move_right()
     {
         auto di = std::filesystem::directory_iterator(current_path);
         for (int i = 0; i < selection; i++)
         {
-            di++;
+            		di++;
         }
         auto selected = *di;
         if (selected.is_directory())
@@ -72,18 +81,22 @@ public:
     auto get_current()
     {
         auto di = std::filesystem::directory_iterator(current_path);
-        std::vector<std::string> res;
+	std::vector<std::string> res;
         for (auto &d : di)
         {
             res.push_back(d.path().filename().string());
         }
         return res;
     }
+    auto get_selection()
+    {
+	    return selection;
+    }
 
     auto get_left()
     {
         auto temp = current_path;
-        if (temp.has_parent_path())
+        if (temp.has_relative_path())
         {
             temp = temp.parent_path();
             auto di = std::filesystem::directory_iterator(temp);
@@ -102,7 +115,8 @@ public:
         auto di = std::filesystem::directory_iterator(current_path);
         for (int i = 0; i < selection; i++)
         {
-            di++;
+            
+       			di++;
         }
         auto selected = *di;
         log << "GET RIGHT: " << selected.path().filename().string() << "\n";

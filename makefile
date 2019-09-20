@@ -1,7 +1,7 @@
 
 OBJECTS = src/main.o src/log.o
 EXEC = ssf
-CXXFLAGS = -Wall -Wextra -std=c++2a
+CXXFLAGS = -Wall -Wextra -std=c++2a -ggdb 
 CXX = g++
 
 all: $(OBJECTS)
@@ -9,3 +9,4 @@ all: $(OBJECTS)
 clean:
 	rm $(EXEC)
 	rm src/*.o
+fresh: clean all
