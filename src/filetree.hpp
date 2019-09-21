@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <vector>
 #include <string>
-
+#include <exception>
 #include "log.hpp"
 
 namespace ssf
@@ -124,14 +124,24 @@ public:
         {
             auto temp_path = current_path;
             temp_path = temp_path / selected.path().filename();
-            auto di = std::filesystem::directory_iterator(temp_path);
-            std::vector<std::string> res;
-            for (auto &d : di)
-            {
-                res.push_back(d.path().filename().string());
-            }
-            return res;
+            try
+	    {
+	    	auto di = std::filesystem::directory_iterator(temp_path);
+            	std::vector<std::string> res;
+		for (auto &d : di)
+            	{
+                	res.push_back(d.path().filename().string());
+            	}
+            	return res;
+       	    }
+	    catch (std::filesystem::filesystem_error& e){
+	    	log << "Exception occured!!: " << e.what() << "\n";
+		return std::vector<std::string>();
+	    }
         }
+	else{
+		//ISSA FILE?
+	}
         return std::vector<std::string>();
     }
 
