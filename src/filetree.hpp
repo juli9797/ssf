@@ -65,28 +65,29 @@ public:
     }
     void move_right()
     {
-        auto di = std::filesystem::directory_iterator(current_path);
-        for (int i = 0; i < selection; i++)
-        {
-            		di++;
-        }
-        auto selected = *di;
+	    try{
+        auto selected = get_directory_entry(selection);
         if (selected.is_directory())
         {
-            current_path = current_path / selected.path().filename();
+            auto temp_path = current_path / selected.path().filename();
             selection = 0;
+	    current_path = temp_path;
         }
+	   }catch (std::filesystem::filesystem_error& e){
+	  	 
+	   }
     }
 
     auto get_current()
     {
-        auto di = std::filesystem::directory_iterator(current_path);
-	std::vector<std::string> res;
-        for (auto &d : di)
-        {
-            res.push_back(d.path().filename().string());
-        }
-        return res;
+	    try
+	    {
+            	return get_directory_list(current_path);
+       	    }
+	    catch (std::filesystem::filesystem_error& e){
+	    	log << "Exception occured!!: " << e.what() << "\n";
+		return std::vector<std::string>();
+	    }
     }
     auto get_selection()
     {
@@ -112,27 +113,18 @@ public:
 
     auto get_right()
     {
-        auto di = std::filesystem::directory_iterator(current_path);
-        for (int i = 0; i < selection; i++)
-        {
-            
-       			di++;
-        }
-        auto selected = *di;
+        try{
+        auto selected = get_directory_entry(selection);
         log << "GET RIGHT: " << selected.path().filename().string() << "\n";
+	
         if (selected.is_directory())
         {
+		
             auto temp_path = current_path;
             temp_path = temp_path / selected.path().filename();
             try
 	    {
-	    	auto di = std::filesystem::directory_iterator(temp_path);
-            	std::vector<std::string> res;
-		for (auto &d : di)
-            	{
-                	res.push_back(d.path().filename().string());
-            	}
-            	return res;
+            	return get_directory_list(temp_path);
        	    }
 	    catch (std::filesystem::filesystem_error& e){
 	    	log << "Exception occured!!: " << e.what() << "\n";
@@ -141,6 +133,10 @@ public:
         }
 	else{
 		//ISSA FILE?
+	}}
+	catch(std::filesystem::filesystem_error& e){
+	    	log << "Exception occured!!: " << e.what() << "\n";
+		auto selected = std::filesystem::directory_entry();
 	}
         return std::vector<std::string>();
     }
@@ -148,6 +144,25 @@ public:
 private:
     int selection = 0;
     std::filesystem::path current_path;
+
+    std::filesystem::directory_entry get_directory_entry(int sel){
+    	auto di = std::filesystem::directory_iterator(current_path);
+        for (int i = 0; i < sel; i++)
+        {
+            
+       			di++;
+        }
+	return *di;
+    }
+    std::vector<std::string> get_directory_list(std::filesystem::path temp){
+        auto di = std::filesystem::directory_iterator(temp);
+	std::vector<std::string> res;
+	for (auto &d : di)
+       	{
+               	res.push_back(d.path().filename().string());
+       	}
+       	return res;
+    }
 };
 
 } // namespace ssf
