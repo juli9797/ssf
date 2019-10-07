@@ -93,6 +93,11 @@ public:
 			return std::vector<std::string>();
 		}
 	}
+
+	auto get_current_path() const
+	{
+		return current_path;
+	}
 	auto get_selection() const
 	{
 		return selection;

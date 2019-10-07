@@ -1,3 +1,6 @@
+#include <cstdlib> // For system call, move to system call abstraction later
+#include <unistd.h>
+
 #include "console_raw_mode.hpp"
 #include "console_screen.hpp"
 #include "console_input_handler.hpp"
@@ -84,6 +87,17 @@ int main()
 			page.set_selection(tree.get_selection());
 
 			screen << page.str();
+		});
+
+		// Test Callback to open a shell
+		// cmd and call logic needs to be implemented elsewhere
+		input_handler.register_callback('s', [&]() {
+			std::string cmd = {"gnome-terminal --working-directory="};
+			cmd += tree.get_current_path();
+			cmd += " &> /dev/null";
+			// maybe try fork execl instead might be faster
+			int ret = system(cmd.c_str());
+			static_cast<void>(ret);
 		});
 
 		ssf::log << "Main keypress loop\n";
