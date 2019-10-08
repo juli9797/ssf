@@ -11,6 +11,16 @@
 #include "log.hpp"
 #include "close_programm_exception.hpp"
 
+void draw_to_page(ssf::ConsolePage &page, ssf::Filetree &tree)
+{
+	page.clear_entries();
+	page.add_col(tree.get_left());
+	page.add_col(tree.get_current());
+	page.add_col(tree.get_right());
+
+	page.set_selection(tree.get_selection());
+}
+
 int main()
 {
 	try
@@ -39,53 +49,25 @@ int main()
 
 		input_handler.register_callback('j', [&]() {
 			tree.move_down();
-
-			page.clear_entries();
-			page.add_col(tree.get_left());
-			page.add_col(tree.get_current());
-			page.add_col(tree.get_right());
-
-			page.set_selection(tree.get_selection());
-
+			draw_to_page(page, tree);
 			screen << page.str();
 		});
 
 		input_handler.register_callback('k', [&]() {
 			tree.move_up();
-
-			page.clear_entries();
-			page.add_col(tree.get_left());
-			page.add_col(tree.get_current());
-			page.add_col(tree.get_right());
-
-			page.set_selection(tree.get_selection());
-
+			draw_to_page(page, tree);
 			screen << page.str();
 		});
 
 		input_handler.register_callback('h', [&]() {
 			tree.move_left();
-
-			page.clear_entries();
-			page.add_col(tree.get_left());
-			page.add_col(tree.get_current());
-			page.add_col(tree.get_right());
-
-			page.set_selection(tree.get_selection());
-
+			draw_to_page(page, tree);
 			screen << page.str();
 		});
 
 		input_handler.register_callback('l', [&]() {
 			tree.move_right();
-
-			page.clear_entries();
-			page.add_col(tree.get_left());
-			page.add_col(tree.get_current());
-			page.add_col(tree.get_right());
-
-			page.set_selection(tree.get_selection());
-
+			draw_to_page(page, tree);
 			screen << page.str();
 		});
 
