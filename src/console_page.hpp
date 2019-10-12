@@ -11,6 +11,36 @@
 namespace ssf
 {
 
+class SingleLine
+{
+public:
+    SingleLine(int row) : _row(row) {}
+
+    void clear_text()
+    {
+        _text = "";
+    }
+
+    SingleLine &operator<<(std::string s)
+    {
+    }
+
+    auto str() const
+    {
+        std::ostringstream p;
+        // Set Cursor
+        // Clear line
+        // Write new Text
+        return p.str();
+    }
+
+private:
+    int _row;
+    std::string _text;
+};
+
+// ?TODO:
+// ?Optimize to store single String only
 class ConsolePage
 {
 public:

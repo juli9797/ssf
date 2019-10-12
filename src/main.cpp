@@ -82,6 +82,11 @@ int main()
 			static_cast<void>(ret);
 		});
 
+		// Command input
+		input_handler.register_callback(':', [&]() {
+			screen << page.str();
+		});
+
 		ssf::log << "Main keypress loop\n";
 
 		while (true)
