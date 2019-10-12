@@ -36,7 +36,10 @@ int main()
 
 		ssf::ConsoleScreen screen;
 
-		ssf::ConsolePage page((cols / 3) - 6, 2);
+		ssf::ConsolePage page;
+		page.set_col_width((cols / 3) - 6)
+			.set_spacing(2)
+			.set_row_count(rows - 10);
 
 		ssf::Filetree tree;
 

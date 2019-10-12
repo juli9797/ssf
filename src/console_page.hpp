@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "console_commands.hpp"
 
@@ -53,15 +54,29 @@ private:
     std::string _text;
 };
 
-// ?TODO:
-// ?Optimize to store single String only
 class ConsolePage
 {
 public:
-    ConsolePage(int col_width, int spacing) : _col_width(col_width),
-                                              _spacing(spacing)
-
+    ConsolePage()
     {
+    }
+
+    ConsolePage &set_col_width(unsigned val)
+    {
+        _col_width = val;
+        return *this;
+    }
+
+    ConsolePage &set_spacing(unsigned val)
+    {
+        _spacing = val;
+        return *this;
+    }
+
+    ConsolePage &set_row_count(unsigned val)
+    {
+        _row_count = val;
+        return *this;
     }
 
     auto str() const
@@ -72,11 +87,18 @@ public:
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
             auto col = entries.at(col_index);
-            for (auto index = 0u; index < col.size(); index++)
+            unsigned entry_offset = 0;
+            if (col.size() > _row_count)
             {
-                auto entry = shortened_string(col.at(index), _col_width);
+                entry_offset = (_selection / _row_count) * _row_count;
+            }
+            unsigned limit = std::min((int)col.size(), (int)_row_count);
+            for (auto index = 0u; index < limit; index++)
+            {
+                auto entry_index = index + entry_offset;
+                auto entry = shortened_string(col.at(entry_index), _col_width);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
-                if (index == selection && col_index == active_col)
+                if (entry_index == _selection && col_index == _active_col)
                 {
                     p << c_cmd::color::blue
                       << entry
@@ -98,7 +120,7 @@ public:
 
     void set_selection(int s)
     {
-        selection = s;
+        _selection = s;
     }
 
     void clear_entries()
@@ -107,10 +129,13 @@ public:
     }
 
 private:
-    unsigned selection = 0;
-    unsigned active_col = 1;
-    const int _col_width;
-    const int _spacing;
+    // Settings
+    unsigned _col_width = 20;
+    unsigned _spacing = 2;
+    unsigned _row_count = 40;
+
+    unsigned _selection = 0;
+    unsigned _active_col = 1;
     std::vector<std::vector<std::string>> entries;
 };
 
