@@ -81,6 +81,26 @@ int main()
 			int ret = system(cmd.c_str());
 			static_cast<void>(ret);
 		});
+		//Quick and dirty xdg-open
+		input_handler.register_callback('o', [&]() {
+			std::string cmd = "xdg-open ";
+			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
+			cmd += " &> /dev/null";
+			ssf::log << cmd << "\n";
+			// maybe try fork execl instead might be faster
+			int ret = system(cmd.c_str());
+			static_cast<void>(ret);
+		});
+		//Quick and dirty vim edit
+		input_handler.register_callback('e', [&]() {
+			std::string cmd = "vim ";
+			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
+			ssf::log << cmd << "\n";
+			// maybe try fork execl instead might be faster
+			int ret = system(cmd.c_str());
+			static_cast<void>(ret);
+		});
+
 
 		// Command input
 		input_handler.register_callback(':', [&]() {
