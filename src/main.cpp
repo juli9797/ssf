@@ -6,6 +6,8 @@
 #include "console_input_handler.hpp"
 #include "console_page.hpp"
 
+#include "external_commands.hpp"
+
 #include "filetree.hpp"
 
 #include "log.hpp"
@@ -87,29 +89,20 @@ int main()
 		input_handler.register_callback('s', [&]() {
 			std::string cmd = {"gnome-terminal --working-directory="};
 			cmd += tree.get_current_path();
-			cmd += " &> /dev/null";
-			// maybe try fork execl instead might be faster
-			int ret = system(cmd.c_str());
-			static_cast<void>(ret);
+			ssf::sys_call(cmd);
 		});
 		//Quick and dirty xdg-open
 		input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
 			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
 			cmd += " &> /dev/null";
-			ssf::log << cmd << "\n";
-			// maybe try fork execl instead might be faster
-			int ret = system(cmd.c_str());
-			static_cast<void>(ret);
+			ssf::sys_call(cmd);
 		});
 		//Quick and dirty vim edit
 		input_handler.register_callback('e', [&]() {
 			std::string cmd = "vim ";
 			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
-			ssf::log << cmd << "\n";
-			// maybe try fork execl instead might be faster
-			int ret = system(cmd.c_str());
-			static_cast<void>(ret);
+			ssf::sys_call(cmd);
 		});
 
 		// Command input
@@ -117,6 +110,10 @@ int main()
 			cmd_line.clear_text();
 			cmd_line << ":";
 			screen << cmd_line.str();
+
+			cmd_line.set_command_cb([&](std::string s) {
+				ssf::log << "Command: " << s << "\n";
+			});
 
 			// Forward all inputs to this lambda
 			input_handler.forward_all([&](char c) {

@@ -58,6 +58,17 @@ public:
                 _text.pop_back();
             }
         }
+        else if (c == 13) // enter
+        {
+            try
+            {
+                command_cb(_text.substr(1, _text.length()));
+            }
+            catch (std::bad_function_call &c)
+            {
+                log << c.what();
+            }
+        }
         else
         {
             _text.push_back(c);
@@ -74,9 +85,17 @@ public:
         return p.str();
     }
 
+    template <typename Callable>
+    void set_command_cb(Callable c)
+    {
+        command_cb = c;
+    }
+
 private:
     int _row;
     std::string _text;
+
+    std::function<void(std::string)> command_cb;
 };
 
 class ConsolePage

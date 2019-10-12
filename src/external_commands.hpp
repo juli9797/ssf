@@ -6,6 +6,15 @@
 
 namespace ssf
 {
+
+void sys_call(std::string cmd)
+{
+    cmd += " &> /dev/null";
+    // maybe try fork execl instead might be faster
+    int ret = system(cmd.c_str());
+    static_cast<void>(ret);
+}
+
 class CommandManager
 {
 public:
