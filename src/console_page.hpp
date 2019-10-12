@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #include "console_commands.hpp"
 
@@ -14,7 +15,7 @@ namespace ssf
 
 // Substring throws if length of string is shorter
 // Instead, return unchanged string
-auto shortened_string(std::string s, int length)
+auto shortened_string(std::string s, std::size_t length)
 {
     if (s.length() < length)
     {
@@ -29,7 +30,13 @@ auto shortened_string(std::string s, int length)
 class SingleLine
 {
 public:
-    SingleLine(int row) : _row(row) {}
+    SingleLine() {}
+
+    SingleLine &set_row(unsigned row)
+    {
+        _row = row;
+        return *this;
+    }
 
     void clear_text()
     {
@@ -38,14 +45,16 @@ public:
 
     SingleLine &operator<<(std::string s)
     {
+        _text = s;
+        return *this;
     }
 
     auto str() const
     {
         std::ostringstream p;
-        // Set Cursor
+        p << c_cmd::set_cursor(_row, 0);
         // Clear line
-        // Write new Text
+        p << _text;
         return p.str();
     }
 
@@ -84,17 +93,23 @@ public:
         std::ostringstream p;
         p << c_cmd::clear;
         p << c_cmd::hide_cursor;
+        // iterate over columns
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
             auto col = entries.at(col_index);
+            // Calculate entry offset in case there are more entries
+            // than rows available
             unsigned entry_offset = 0;
             if (col.size() > _row_count)
             {
-                entry_offset = (_selection / _row_count) * _row_count;
+                entry_offset = std::floor(_selection / _row_count) * _row_count;
             }
-            unsigned limit = std::min((int)col.size(), (int)_row_count);
+            // Only iterate to either row_count or size of the col
+            unsigned limit = std::min((int)(col.size() - entry_offset),
+                                      (int)_row_count);
             for (auto index = 0u; index < limit; index++)
             {
+                // Calculate the actual index for the entry
                 auto entry_index = index + entry_offset;
                 auto entry = shortened_string(col.at(entry_index), _col_width);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));

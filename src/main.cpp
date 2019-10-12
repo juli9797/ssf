@@ -34,18 +34,23 @@ int main()
 
 		ssf::ConsoleInputHandler input_handler;
 
-		ssf::ConsoleScreen screen;
+		ssf::Filetree tree;
 
 		ssf::ConsolePage page;
 		page.set_col_width((cols / 3) - 6)
 			.set_spacing(2)
-			.set_row_count(rows - 10);
+			.set_row_count(rows - 1);
 
-		ssf::Filetree tree;
+		draw_to_page(page, tree);
 
-		page.add_col(tree.get_left());
-		page.add_col(tree.get_current());
-		page.add_col(tree.get_right());
+		ssf::SingleLine cmd_line;
+		cmd_line.set_row(rows - 1);
+		cmd_line << ":test cmd";
+
+		ssf::ConsoleScreen screen;
+		screen.set_post_draw_callback([&]() {
+			screen.add(cmd_line.str());
+		});
 
 		screen << page.str();
 
