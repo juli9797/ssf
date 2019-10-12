@@ -1,7 +1,7 @@
 #include <cstdlib> // For system call, move to system call abstraction later
 #include <unistd.h>
 
-#include "console_raw_mode.hpp"
+#include "console_settings.hpp"
 #include "console_screen.hpp"
 #include "console_input_handler.hpp"
 #include "console_page.hpp"
@@ -27,13 +27,16 @@ int main()
 	{
 		ssf::log << "Start\n";
 
-		ssf::ConsoleRawMode console_settings; // Enables Raw Mode
+		ssf::ConsoleSettings console_settings; // Enables Raw Mode
+
+		auto cols = console_settings.get_col();
+		auto rows = console_settings.get_row();
 
 		ssf::ConsoleInputHandler input_handler;
 
 		ssf::ConsoleScreen screen;
 
-		ssf::ConsolePage page(35);
+		ssf::ConsolePage page((cols / 3) - 6, 2);
 
 		ssf::Filetree tree;
 
@@ -100,7 +103,6 @@ int main()
 			int ret = system(cmd.c_str());
 			static_cast<void>(ret);
 		});
-
 
 		// Command input
 		input_handler.register_callback(':', [&]() {

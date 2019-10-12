@@ -11,6 +11,20 @@
 namespace ssf
 {
 
+// Substring throws if length of string is shorter
+// Instead, return unchanged string
+auto shortened_string(std::string s, int length)
+{
+    if (s.length() < length)
+    {
+        return s;
+    }
+    else
+    {
+        return s.substr(0, length);
+    }
+}
+
 class SingleLine
 {
 public:
@@ -44,7 +58,9 @@ private:
 class ConsolePage
 {
 public:
-    ConsolePage(int space = 15) : spacing(space)
+    ConsolePage(int col_width, int spacing) : _col_width(col_width),
+                                              _spacing(spacing)
+
     {
     }
 
@@ -58,14 +74,17 @@ public:
             auto col = entries.at(col_index);
             for (auto index = 0u; index < col.size(); index++)
             {
-                p << c_cmd::set_cursor(index, col_index * spacing);
+                auto entry = shortened_string(col.at(index), _col_width);
+                p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
                 if (index == selection && col_index == active_col)
                 {
-                    p << c_cmd::color::blue << col.at(index) << c_cmd::color::reset;
+                    p << c_cmd::color::blue
+                      << entry
+                      << c_cmd::color::reset;
                 }
                 else
                 {
-                    p << col.at(index);
+                    p << entry;
                 }
             }
         }
@@ -90,7 +109,8 @@ public:
 private:
     unsigned selection = 0;
     unsigned active_col = 1;
-    const int spacing;
+    const int _col_width;
+    const int _spacing;
     std::vector<std::vector<std::string>> entries;
 };
 
