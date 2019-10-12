@@ -27,12 +27,12 @@ auto shortened_string(std::string s, std::size_t length)
     }
 }
 
-class SingleLine
+class CommandLine
 {
 public:
-    SingleLine() {}
+    CommandLine() {}
 
-    SingleLine &set_row(unsigned row)
+    CommandLine &set_row(unsigned row)
     {
         _row = row;
         return *this;
@@ -43,18 +43,34 @@ public:
         _text = "";
     }
 
-    SingleLine &operator<<(std::string s)
+    CommandLine &operator<<(std::string s)
     {
-        _text = s;
+        _text += s;
+        return *this;
+    }
+
+    CommandLine &operator<<(char c)
+    {
+        if (c == 127) // Delete
+        {
+            if (_text.length())
+            {
+                _text.pop_back();
+            }
+        }
+        else
+        {
+            _text.push_back(c);
+        }
         return *this;
     }
 
     auto str() const
     {
         std::ostringstream p;
-        p << c_cmd::set_cursor(_row, 0);
-        // Clear line
-        p << _text;
+        p << c_cmd::set_cursor(_row, 0)
+          << c_cmd::clear_line
+          << _text;
         return p.str();
     }
 

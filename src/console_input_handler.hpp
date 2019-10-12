@@ -21,24 +21,69 @@ constexpr char ctrl_key(char const c)
 class ConsoleInputHandler
 {
 public:
-    using callback_t = std::function<void(void)>;
-
-    void process_key_press() const
+    void process_key_press()
     {
         auto c = read_key_blocking();
-        try
+        if (char_forward_mode == true)
         {
-            callbacks.at(c)(); // Execute callback
+            if (c == char_forward_cancel_key)
+            {
+                char_forward_mode = false;
+                try
+                {
+                    char_forward_complete_callback();
+                }
+                catch (std::bad_function_call &c)
+                {
+                    log << c.what();
+                }
+            }
+            else
+            {
+                try
+                {
+                    char_forward_callback(c);
+                }
+                catch (std::bad_function_call &c)
+                {
+                    log << c.what();
+                }
+            }
         }
-        catch (const std::out_of_range &e)
+        else
         {
-            log << LogLevel::warning << "key " << c << " not registered\n";
+            try
+            {
+                callbacks.at(c)(); // Execute callback
+            }
+            catch (const std::out_of_range &e)
+            {
+                log << LogLevel::warning << "key " << (int)c << " not registered\n";
+            }
         }
     }
 
-    void register_callback(char c, callback_t callable)
+    void register_callback(char c, std::function<void(void)> callable)
     {
         callbacks[c] = callable;
+    }
+
+    template <typename Callable>
+    void forward_all(Callable c)
+    {
+        char_forward_mode = true;
+        char_forward_callback = c;
+    }
+
+    template <typename Callable>
+    void set_char_forward_complete_cb(Callable c)
+    {
+        char_forward_complete_callback = c;
+    }
+
+    void cancel_forwarding()
+    {
+        char_forward_mode = false;
     }
 
 protected:
@@ -48,7 +93,11 @@ protected:
     }
 
 private:
-    std::unordered_map<char, callback_t> callbacks;
+    std::unordered_map<char, std::function<void(void)>> callbacks;
+    std::function<void(char)> char_forward_callback;
+    std::function<void()> char_forward_complete_callback;
+    bool char_forward_mode = false;
+    char char_forward_cancel_key = 27;
 };
 
 } // namespace ssf

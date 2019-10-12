@@ -10,6 +10,7 @@ namespace c_cmd
 constexpr auto new_line = "\r\n";
 constexpr auto weak_clear = "\x1b[2J"; // doesnt really clear
 constexpr auto clear = "\033c";
+constexpr auto clear_line = "\033[2K";
 constexpr auto reset_cursor = "\x1b[H";
 constexpr auto hide_cursor = "\x1b[?25l";
 constexpr auto show_cursor = "\x1b[?25h";

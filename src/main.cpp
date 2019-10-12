@@ -43,13 +43,13 @@ int main()
 
 		draw_to_page(page, tree);
 
-		ssf::SingleLine cmd_line;
+		ssf::CommandLine cmd_line;
 		cmd_line.set_row(rows - 1);
-		cmd_line << ":test cmd";
 
 		ssf::ConsoleScreen screen;
 		screen.set_post_draw_callback([&]() {
-			screen.add(cmd_line.str());
+			// Add default screen print here
+			// updates on every draw (<<)
 		});
 
 		screen << page.str();
@@ -114,7 +114,19 @@ int main()
 
 		// Command input
 		input_handler.register_callback(':', [&]() {
-			screen << page.str();
+			cmd_line.clear_text();
+			cmd_line << ":";
+			screen << cmd_line.str();
+
+			// Forward all inputs to this lambda
+			input_handler.forward_all([&](char c) {
+				// Todo: find way to pipe char directly to screen
+				cmd_line << c;
+				screen << cmd_line.str();
+			});
+			input_handler.set_char_forward_complete_cb([&]() {
+				screen << page.str();
+			});
 		});
 
 		ssf::log << "Main keypress loop\n";
