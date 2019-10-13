@@ -58,8 +58,17 @@ int main()
 		cmd_line.set_draw_cb([&](std::string s) {
 			screen << s;
 		});
+		cmd_line.set_command_cb([&](std::string s) {
+			ssf::log << "Command: " << s << "\n";
+		});
 
-		screen << page.str();
+		// Command input
+		input_handler.register_callback(':', [&]() {
+			input_handler.cancel_loop();
+			cmd_line.clear_text();
+			cmd_line << ":";
+			screen << cmd_line.str();
+		});
 
 		input_handler.register_callback('q', []() {
 			throw ssf::close_program_ex_t();
@@ -110,18 +119,9 @@ int main()
 			ssf::sys_call(cmd);
 		});
 
-		// Command input
-		input_handler.register_callback(':', [&]() {
-			cmd_line.clear_text();
-			cmd_line << ":";
-			screen << cmd_line.str();
-
-			cmd_line.set_command_cb([&](std::string s) {
-				ssf::log << "Command: " << s << "\n";
-			});
-		});
-
 		ssf::log << "Main keypress loop\n";
+
+		screen << page.str();
 
 		while (true)
 		{

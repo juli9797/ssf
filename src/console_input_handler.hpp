@@ -23,7 +23,8 @@ class ConsoleInputHandler
 public:
     void loop()
     {
-        while (true)
+        loop_enabled = true;
+        while (loop_enabled)
         {
             auto c = std::cin.get();
             try
@@ -34,11 +35,12 @@ public:
             {
                 log << LogLevel::warning << "key " << (int)c << " not registered\n";
             }
-            if (c == command_key)
-            {
-                return;
-            }
         }
+    }
+
+    void cancel_loop()
+    {
+        loop_enabled = false;
     }
 
     void register_callback(char c, std::function<void(void)> callable)
@@ -48,7 +50,7 @@ public:
 
 private:
     std::unordered_map<char, std::function<void(void)>> callbacks;
-    char command_key = ':';
+    bool loop_enabled = true;
 };
 
 } // namespace ssf
