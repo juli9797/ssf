@@ -21,37 +21,11 @@ constexpr char ctrl_key(char const c)
 class ConsoleInputHandler
 {
 public:
-    void process_key_press()
+    void loop()
     {
-        auto c = read_key_blocking();
-        if (char_forward_mode == true)
+        while (true)
         {
-            if (c == char_forward_cancel_key)
-            {
-                char_forward_mode = false;
-                try
-                {
-                    char_forward_complete_callback();
-                }
-                catch (std::bad_function_call &c)
-                {
-                    log << c.what();
-                }
-            }
-            else
-            {
-                try
-                {
-                    char_forward_callback(c);
-                }
-                catch (std::bad_function_call &c)
-                {
-                    log << c.what();
-                }
-            }
-        }
-        else
-        {
+            auto c = std::cin.get();
             try
             {
                 callbacks.at(c)(); // Execute callback
@@ -59,6 +33,10 @@ public:
             catch (const std::out_of_range &e)
             {
                 log << LogLevel::warning << "key " << (int)c << " not registered\n";
+            }
+            if (c == command_key)
+            {
+                return;
             }
         }
     }
@@ -68,36 +46,9 @@ public:
         callbacks[c] = callable;
     }
 
-    template <typename Callable>
-    void forward_all(Callable c)
-    {
-        char_forward_mode = true;
-        char_forward_callback = c;
-    }
-
-    template <typename Callable>
-    void set_char_forward_complete_cb(Callable c)
-    {
-        char_forward_complete_callback = c;
-    }
-
-    void cancel_forwarding()
-    {
-        char_forward_mode = false;
-    }
-
-protected:
-    auto read_key_blocking() const -> char
-    {
-        return std::cin.get();
-    }
-
 private:
     std::unordered_map<char, std::function<void(void)>> callbacks;
-    std::function<void(char)> char_forward_callback;
-    std::function<void()> char_forward_complete_callback;
-    bool char_forward_mode = false;
-    char char_forward_cancel_key = 27;
+    char command_key = ':';
 };
 
 } // namespace ssf

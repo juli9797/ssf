@@ -5,6 +5,7 @@
 #include "console_screen.hpp"
 #include "console_input_handler.hpp"
 #include "console_page.hpp"
+#include "command_line.hpp"
 
 #include "external_commands.hpp"
 
@@ -45,13 +46,17 @@ int main()
 
 		draw_to_page(page, tree);
 
-		ssf::CommandLine cmd_line;
-		cmd_line.set_row(rows - 1);
-
 		ssf::ConsoleScreen screen;
 		screen.set_post_draw_callback([&]() {
 			// Add default screen print here
 			// updates on every draw (<<)
+		});
+
+		ssf::CommandLine cmd_line;
+		cmd_line.set_row(rows - 1);
+		// needs acess to draw function bc it handles user input
+		cmd_line.set_draw_cb([&](std::string s) {
+			screen << s;
 		});
 
 		screen << page.str();
@@ -114,23 +119,14 @@ int main()
 			cmd_line.set_command_cb([&](std::string s) {
 				ssf::log << "Command: " << s << "\n";
 			});
-
-			// Forward all inputs to this lambda
-			input_handler.forward_all([&](char c) {
-				// Todo: find way to pipe char directly to screen
-				cmd_line << c;
-				screen << cmd_line.str();
-			});
-			input_handler.set_char_forward_complete_cb([&]() {
-				screen << page.str();
-			});
 		});
 
 		ssf::log << "Main keypress loop\n";
 
 		while (true)
 		{
-			input_handler.process_key_press();
+			input_handler.loop();
+			cmd_line.loop();
 		}
 	}
 	catch (ssf::close_program_ex_t)
