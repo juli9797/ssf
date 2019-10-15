@@ -65,7 +65,7 @@ public:
 			auto selected = get_directory_entry(selection);
 			if (selected.is_directory())
 			{
-				current_path = current_path / selected.path().filename();
+				current_path = get_selected_path();
 				selection = 0;
 			}
 			else
@@ -84,20 +84,14 @@ public:
 		}
 	}
 
-	auto get_selected_path()
+	auto get_selected_path() -> std::filesystem::path
 	{
-		return current_path / get_directory_entry(selection).path().filename();
+		return get_directory_entry(selection).path();
 	}
 
-	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
+	auto get_current() const
 	{
-		auto di = std::filesystem::directory_iterator(temp);
-		std::vector<std::string> res;
-		for (auto &d : di)
-		{
-			res.push_back(d.path().filename().string());
-		}
-		return res;
+		return get_directory_list(current_path);
 	}
 
 	auto get_current_path() const
@@ -155,11 +149,18 @@ private:
 	std::filesystem::directory_entry get_directory_entry(int sel) const
 	{
 		auto di = std::filesystem::directory_iterator(current_path);
-		for (int i = 0; i < sel; i++)
+		return *std::next(di, sel);
+	}
+
+	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
+	{
+		auto di = std::filesystem::directory_iterator(temp);
+		std::vector<std::string> res;
+		for (auto &d : di)
 		{
-			di++;
+			res.push_back(d.path().filename().string());
 		}
-		return *di;
+		return res;
 	}
 };
 
