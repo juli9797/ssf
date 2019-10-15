@@ -113,7 +113,7 @@ public:
 		try
 		{
 			auto selected = get_directory_entry(selection);
-			if (selected.is_directory())
+			if (selected.is_directory() && !std::filesystem::is_empty(selected))
 			{
 				return get_directory_list(get_selected_path());
 			}
