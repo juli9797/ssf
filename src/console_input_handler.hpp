@@ -14,10 +14,6 @@ constexpr char ctrl_key(char const c)
     return c & 0x1f;
 }
 
-// TODO:
-// Add mode where all keypresses are forwarded to a command handler
-// Quit this mode on key (bsp esc)
-
 class ConsoleInputHandler
 {
 public:

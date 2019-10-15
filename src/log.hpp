@@ -60,6 +60,29 @@ private:
     std::ofstream logfile;
 };
 
-extern Log log;
+class DummyLog
+{
+public:
+    DummyLog()
+    {
+    }
+
+    ~DummyLog()
+    {
+    }
+
+    template <typename T>
+    DummyLog &operator<<(T const &t)
+    {
+        return *this;
+    }
+
+    DummyLog &operator<<(LogLevel l)
+    {
+        return *this;
+    }
+};
+
+extern DummyLog log;
 
 } // namespace ssf
