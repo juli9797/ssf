@@ -105,19 +105,14 @@ public:
 
 	auto get_left() const
 	{
-		auto temp = current_path;
-		if (temp.has_relative_path())
+		if (current_path.has_relative_path())
 		{
-			temp = temp.parent_path();
-			auto di = std::filesystem::directory_iterator(temp);
-			std::vector<std::string> res;
-			for (auto &d : di)
-			{
-				res.push_back(d.path().filename().string());
-			}
-			return res;
+			return get_directory_list(current_path.parent_path())
 		}
-		return std::vector<std::string>();
+		else
+		{
+			return std::vector<std::string>();
+		}
 	}
 
 	// TODO: Remove cascaded try/catch and multiple default returns
