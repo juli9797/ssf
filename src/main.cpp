@@ -59,12 +59,13 @@ int main()
 			screen << s;
 		});
 		cmd_line.set_command_cb([&](std::string s) {
+			screen << page.str();
 			ssf::log << "Command: " << s << "\n";
 		});
 
 		// Command input
-		input_handler.register_callback(':', [&]() {
-			input_handler.cancel_loop();
+		char const cmd_mode_key = ':';
+		input_handler.register_callback(cmd_mode_key, [&]() {
 			cmd_line.clear_text();
 			cmd_line << ":";
 			screen << cmd_line.str();
@@ -125,8 +126,8 @@ int main()
 
 		while (true)
 		{
-			input_handler.loop();
-			cmd_line.loop();
+			input_handler.loop_until(cmd_mode_key);
+			cmd_line.loop_until(27); // ESC
 		}
 	}
 	catch (ssf::close_program_ex_t)

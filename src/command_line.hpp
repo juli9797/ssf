@@ -35,11 +35,12 @@ public:
         return *this;
     }
 
-    void loop()
+    void loop_until(char exit_key)
     {
-        while (true)
+        char c = '0';
+        while (c != exit_key)
         {
-            char c = std::cin.get();
+            c = std::cin.get();
             switch (c)
             {
             case 127: // Delete
@@ -57,9 +58,6 @@ public:
                 {
                     log << c.what();
                 }
-                return;
-                break;
-            case 27: // ESC
                 return;
                 break;
             default:

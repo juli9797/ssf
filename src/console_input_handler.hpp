@@ -17,26 +17,21 @@ constexpr char ctrl_key(char const c)
 class ConsoleInputHandler
 {
 public:
-    void loop()
+    void loop_until(char exit_char)
     {
-        loop_enabled = true;
-        while (loop_enabled)
+        char c = '\0';
+        while (c != exit_char)
         {
-            auto c = std::cin.get();
+            c = std::cin.get();
             try
             {
                 callbacks.at(c)(); // Execute callback
             }
             catch (const std::out_of_range &e)
             {
-                log << LogLevel::warning << "key " << (int)c << " not registered\n";
+                log << "key " << (int)c << " not registered\n";
             }
         }
-    }
-
-    void cancel_loop()
-    {
-        loop_enabled = false;
     }
 
     void register_callback(char c, std::function<void(void)> callable)
@@ -46,7 +41,6 @@ public:
 
 private:
     std::unordered_map<char, std::function<void(void)>> callbacks;
-    bool loop_enabled = true;
 };
 
 } // namespace ssf

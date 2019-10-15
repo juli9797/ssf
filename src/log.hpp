@@ -74,11 +74,13 @@ public:
     template <typename T>
     DummyLog &operator<<(T const &t)
     {
+        static_cast<void>(t);
         return *this;
     }
 
     DummyLog &operator<<(LogLevel l)
     {
+        static_cast<void>(l);
         return *this;
     }
 };
