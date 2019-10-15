@@ -24,14 +24,6 @@ public:
 		current_path = std::filesystem::absolute(std::filesystem::current_path());
 	}
 
-	auto move_layer_up()
-	{
-		if (current_path.has_parent_path())
-		{
-			current_path = current_path.parent_path();
-		}
-	}
-
 	void move_up()
 	{
 		if (selection != 0)
@@ -52,7 +44,7 @@ public:
 	void move_left()
 	{
 
-		if (current_path.has_relative_path())
+		if (current_path.has_parent_path())
 		{
 			current_path = current_path.parent_path();
 			selection = 0;
@@ -84,7 +76,7 @@ public:
 		}
 	}
 
-	auto get_selected_path() -> std::filesystem::path
+	auto get_selected_path() const -> std::filesystem::path
 	{
 		return get_directory_entry(selection).path();
 	}
@@ -123,14 +115,14 @@ public:
 			auto selected = get_directory_entry(selection);
 			if (selected.is_directory())
 			{
-				auto temp_path = current_path / selected.path().filename();
-				return get_directory_list(temp_path);
+				return get_directory_list(get_selected_path());
 			}
 		}
 		catch (std::filesystem::filesystem_error &e)
 		{
 			// Get Dir Entry should not throw
 		}
+
 		return std::vector<std::string>();
 	}
 
