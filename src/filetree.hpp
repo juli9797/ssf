@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <exception>
+#include <functional>
+
 #include "log.hpp"
 
 namespace ssf
@@ -26,15 +28,12 @@ public:
 	{
 		if (current_path.has_parent_path())
 		{
-			log << "current Path :" << current_path << "\n";
 			current_path = current_path.parent_path();
-			log << "parent Path : " << current_path << "\n";
 		}
 	}
 
 	void move_up()
 	{
-		//  Sanitize
 		if (selection != 0)
 		{
 			selection--;
@@ -58,10 +57,6 @@ public:
 			current_path = current_path.parent_path();
 			selection = 0;
 		}
-		else
-		{
-			//has no relative path -> in the root dir
-		}
 	}
 	void move_right()
 	{
@@ -75,6 +70,16 @@ public:
 				selection = 0;
 				current_path = temp_path;
 			}
+			else
+			{
+				try
+				{
+					move_right_on_file(selected);
+				}
+				catch (std::bad_function_call &e)
+				{
+				}
+			}
 		}
 		catch (std::filesystem::filesystem_error &e)
 		{
@@ -83,15 +88,7 @@ public:
 
 	auto get_current() const
 	{
-		try
-		{
-			return get_directory_list(current_path);
-		}
-		catch (std::filesystem::filesystem_error &e)
-		{
-			log << "Exception occured!!: " << e.what() << "\n";
-			return std::vector<std::string>();
-		}
+		return get_directory_list(current_path);
 	}
 
 	auto get_current_path() const
@@ -107,7 +104,7 @@ public:
 	{
 		if (current_path.has_relative_path())
 		{
-			return get_directory_list(current_path.parent_path())
+			return get_directory_list(current_path.parent_path());
 		}
 		else
 		{
@@ -121,35 +118,21 @@ public:
 		try
 		{
 			auto selected = get_directory_entry(selection);
-			log << "GET RIGHT: " << selected.path().filename().string() << "\n";
-
 			if (selected.is_directory())
 			{
-
-				auto temp_path = current_path;
-				temp_path = temp_path / selected.path().filename();
-				try
-				{
-					return get_directory_list(temp_path);
-				}
-				catch (std::filesystem::filesystem_error &e)
-				{
-					log << "Exception occured!!: " << e.what() << "\n";
-					return std::vector<std::string>();
-				}
-			}
-			else
-			{
-				//ISSA FILE?
+				auto temp_path = current_path / selected.path().filename();
+				return get_directory_list(temp_path);
 			}
 		}
 		catch (std::filesystem::filesystem_error &e)
 		{
-			log << "Exception occured!!: " << e.what() << "\n";
-			auto selected = std::filesystem::directory_entry();
+			// Get Dir Entry should not throw
 		}
 		return std::vector<std::string>();
 	}
+
+protected:
+	std::function<void(std::filesystem::directory_entry)> move_right_on_file;
 
 private:
 	int selection = 0;
