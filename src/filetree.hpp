@@ -55,12 +55,12 @@ public:
 		try
 		{
 			auto selected = get_directory_entry(selection);
-			if (selected.is_directory())
+			if (selected.is_directory() && !std::filesystem::is_empty(selected))
 			{
 				current_path = get_selected_path();
 				selection = 0;
 			}
-			else
+			else if (selected.is_regular_file() || selected.is_character_file())
 			{
 				try
 				{
