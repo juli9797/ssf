@@ -59,7 +59,7 @@ int main()
 			screen << s;
 		});
 		cmd_line.set_command_cb([&](std::string s) {
-			screen << page.str();
+			screen << page.str(); // Redraw to remove cmd_line
 			ssf::log << "Command: " << s << "\n";
 		});
 
@@ -109,14 +109,20 @@ int main()
 		//Quick and dirty xdg-open
 		input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
-			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
-			cmd += " &> /dev/null";
+			cmd += tree.get_selected_path();
 			ssf::sys_call(cmd);
 		});
+
+		tree.set_move_right_on_file_cb([&]() {
+			std::string cmd = "xdg-open ";
+			cmd += tree.get_selected_path();
+			ssf::sys_call(cmd);
+		});
+
 		//Quick and dirty vim edit
 		input_handler.register_callback('e', [&]() {
 			std::string cmd = "vim ";
-			cmd += tree.get_current_path() / tree.get_current()[tree.get_selection()];
+			cmd += tree.get_selected_path();
 			ssf::sys_call(cmd);
 		});
 
@@ -133,7 +139,6 @@ int main()
 	catch (ssf::close_program_ex_t)
 	{
 		// Makes sure to call all dtors
-		return 0;
 	}
 
 	return 0;

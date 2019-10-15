@@ -65,16 +65,14 @@ public:
 			auto selected = get_directory_entry(selection);
 			if (selected.is_directory())
 			{
-				auto temp_path = current_path / selected.path().filename();
-				auto di = std::filesystem::directory_iterator(temp_path);
+				current_path = current_path / selected.path().filename();
 				selection = 0;
-				current_path = temp_path;
 			}
 			else
 			{
 				try
 				{
-					move_right_on_file(selected);
+					move_right_on_file();
 				}
 				catch (std::bad_function_call &e)
 				{
@@ -86,9 +84,20 @@ public:
 		}
 	}
 
-	auto get_current() const
+	auto get_selected_path()
 	{
-		return get_directory_list(current_path);
+		return current_path / get_directory_entry(selection).path().filename();
+	}
+
+	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
+	{
+		auto di = std::filesystem::directory_iterator(temp);
+		std::vector<std::string> res;
+		for (auto &d : di)
+		{
+			res.push_back(d.path().filename().string());
+		}
+		return res;
 	}
 
 	auto get_current_path() const
@@ -131,12 +140,17 @@ public:
 		return std::vector<std::string>();
 	}
 
-protected:
-	std::function<void(std::filesystem::directory_entry)> move_right_on_file;
+	template <typename Callable>
+	void set_move_right_on_file_cb(Callable c)
+	{
+		move_right_on_file = c;
+	}
 
 private:
 	int selection = 0;
 	std::filesystem::path current_path;
+
+	std::function<void(void)> move_right_on_file;
 
 	std::filesystem::directory_entry get_directory_entry(int sel) const
 	{
@@ -146,17 +160,6 @@ private:
 			di++;
 		}
 		return *di;
-	}
-
-	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
-	{
-		auto di = std::filesystem::directory_iterator(temp);
-		std::vector<std::string> res;
-		for (auto &d : di)
-		{
-			res.push_back(d.path().filename().string());
-		}
-		return res;
 	}
 };
 
