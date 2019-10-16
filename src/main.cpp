@@ -104,10 +104,10 @@ int main()
 		input_handler.register_callback('s', [&]() {
 			std::string cmd = {"gnome-terminal --working-directory="};
 			cmd += tree.get_current_path();
-			ssf::sys_call(cmd);
+			ssf::sys_call_silent(cmd);
 		});
-		//Quick and dirty xdg-open
-		input_handler.register_callback('o', [&]() {
+                // Quick and dirty xdg-open
+                input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
 			cmd += tree.get_selected_path();
 			ssf::sys_call(cmd);
