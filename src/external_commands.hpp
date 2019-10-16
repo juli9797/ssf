@@ -6,8 +6,13 @@
 
 namespace ssf
 {
-
 void sys_call(std::string cmd)
+{
+    // maybe try fork execl instead might be faster
+    int ret = system(cmd.c_str());
+    static_cast<void>(ret);
+}
+void sys_call_silent(std::string cmd)
 {
     cmd += " &> /dev/null";
     // maybe try fork execl instead might be faster
@@ -15,8 +20,7 @@ void sys_call(std::string cmd)
     static_cast<void>(ret);
 }
 
-class CommandManager
-{
+class CommandManager {
 public:
     std::map<std::string, std::set<std::string>> commands = {
         {"shell123",
