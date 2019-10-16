@@ -55,7 +55,7 @@ public:
 		try
 		{
 			auto selected = get_directory_entry(selection);
-			if (selected.is_directory() && !std::filesystem::is_empty(selected))
+			if (selected.is_directory())
 			{
 				current_path = get_selected_path();
 				selection = 0;
@@ -132,16 +132,29 @@ public:
 		move_right_on_file = c;
 	}
 
+	std::size_t get_entry_count() const
+	{
+		auto di = std::filesystem::directory_iterator(current_path);
+		return std::distance(std::filesystem::begin(di), std::filesystem::end(di));
+	}
+
 private:
 	int selection = 0;
 	std::filesystem::path current_path;
 
 	std::function<void(void)> move_right_on_file;
 
-	std::filesystem::directory_entry get_directory_entry(int sel) const
+	std::filesystem::directory_entry get_directory_entry(unsigned sel) const
 	{
 		auto di = std::filesystem::directory_iterator(current_path);
-		return *std::next(di, sel);
+		if (get_entry_count() > sel)
+		{
+			return *std::next(di, sel);
+		}
+		else
+		{
+			return *di;
+		}
 	}
 
 	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
