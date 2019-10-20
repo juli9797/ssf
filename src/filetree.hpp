@@ -33,13 +33,12 @@ public:
 	}
 	void move_down()
 	{
-		auto di = std::filesystem::directory_iterator(current_path);
-		// Sanitize
-		int dist = std::distance(std::filesystem::begin(di), std::filesystem::end(di));
-		if (selection < dist - 1)
-		{
-			selection++;
-		}
+          	auto di = std::filesystem::directory_iterator(current_path);
+          	// Sanitize
+          	int dist = std::distance(std::filesystem::begin(di),std::filesystem::end(di));
+          	if (selection < dist - 1) {
+            		selection++;
+	    	}
 	}
 	void move_left()
 	{
@@ -50,33 +49,25 @@ public:
 			selection = 0;
 		}
 	}
-	void move_right()
-	{
-		try
-		{
-			auto selected = get_directory_entry(selection);
-			if (selected.is_directory())
-			{
-				current_path = get_selected_path();
-				selection = 0;
-			}
-			else if (selected.is_regular_file() || selected.is_character_file())
-			{
-				try
-				{
-					move_right_on_file();
-				}
-				catch (std::bad_function_call &e)
-				{
-				}
-			}
-		}
-		catch (std::filesystem::filesystem_error &e)
-		{
-		}
-	}
+        void move_right() {
+        	try {
+          		auto selected = get_directory_entry(selection);
+            		if (selected.is_directory()) {
+				 auto probePerm =get_directory_list(get_selected_path()); //probe if filesystem throws permission error 
+             			 current_path = get_selected_path();
+              		selection = 0;
+            		} else if (selected.is_regular_file() || selected.is_character_file()) {
+              			try {
+               		 		move_right_on_file();
+              			} catch (std::bad_function_call &e) {
+              			}
+            		}
+        	 } catch (std::filesystem::filesystem_error &e) {
+         
+	 	}
+        }
 
-	auto get_selected_path() const -> std::filesystem::path
+        auto get_selected_path() const -> std::filesystem::path
 	{
 		return get_directory_entry(selection).path();
 	}
