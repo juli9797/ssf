@@ -75,6 +75,7 @@ public:
             {
                 // Calculate the actual index for the entry
                 auto entry_index = index + entry_offset;
+                auto dir_entry = col.at(entry_index);
                 auto entry = shortened_string(col.at(entry_index).path().filename().string(), _col_width);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
                 if (entry_index == _selection && col_index == _active_col)
@@ -85,7 +86,16 @@ public:
                 }
                 else
                 {
-                    p << entry;
+                    if (dir_entry.is_directory())
+                    {
+                        p << c_cmd::color::foreground::bright_cyan
+                          << entry
+                          << c_cmd::color::reset;
+                    }
+                    else
+                    {
+                        p << entry;
+                    }
                 }
             }
         }
@@ -104,7 +114,7 @@ public:
 
     void clear_entries() { entries.resize(0); }
 
-  private:
+private:
     // Settings
     unsigned _col_width = 20;
     unsigned _spacing = 2;

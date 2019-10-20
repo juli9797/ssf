@@ -18,10 +18,16 @@ constexpr auto bold_enable = "\033[1m";
 constexpr auto bold_disable = "\033[0m";
 constexpr auto default_start = "\x1b[?25l\x1b[H\033c";
 
+// more colors https://en.wikipedia.org/wiki/ANSI_escape_code
 namespace color
 {
 constexpr auto blue = "\u001b[44m";
 constexpr auto reset = "\u001b[0m";
+namespace foreground
+{
+constexpr auto bright_magenta = "\u001b[95m";
+constexpr auto bright_cyan = "\u001b[96m";
+} // namespace foreground
 } // namespace color
 
 auto set_cursor(int x, int y)
