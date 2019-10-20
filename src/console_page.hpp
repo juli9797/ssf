@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <sstream>
-#include <string>
+#include "console_commands.hpp"
 #include <algorithm>
 #include <cmath>
-
-#include "console_commands.hpp"
+#include <filesystem>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "log.hpp"
 
@@ -75,7 +75,7 @@ public:
             {
                 // Calculate the actual index for the entry
                 auto entry_index = index + entry_offset;
-                auto entry = shortened_string(col.at(entry_index), _col_width);
+                auto entry = shortened_string(col.at(entry_index).path().filename().string(), _col_width);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
                 if (entry_index == _selection && col_index == _active_col)
                 {
@@ -92,7 +92,7 @@ public:
         return p.str();
     }
 
-    void add_col(std::vector<std::string> c)
+    void add_col(std::vector<std::filesystem::directory_entry> c)
     {
         entries.push_back(c);
     }
@@ -102,12 +102,9 @@ public:
         _selection = s;
     }
 
-    void clear_entries()
-    {
-        entries.resize(0);
-    }
+    void clear_entries() { entries.resize(0); }
 
-private:
+  private:
     // Settings
     unsigned _col_width = 20;
     unsigned _spacing = 2;
@@ -115,7 +112,7 @@ private:
 
     unsigned _selection = 0;
     unsigned _active_col = 1;
-    std::vector<std::vector<std::string>> entries;
+    std::vector<std::vector<std::filesystem::directory_entry>> entries;
 };
 
 } // namespace ssf

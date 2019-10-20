@@ -80,7 +80,7 @@ public:
 	{
 		return get_directory_entry(selection).path();
 	}
-
+	//mod this
 	auto get_current() const
 	{
 		return get_directory_list(current_path);
@@ -94,7 +94,7 @@ public:
 	{
 		return selection;
 	}
-
+	//and this
 	auto get_left() const
 	{
 		if (current_path.has_relative_path())
@@ -103,7 +103,7 @@ public:
 		}
 		else
 		{
-			return std::vector<std::string>();
+			return std::vector<std::filesystem::directory_entry>();
 		}
 	}
 
@@ -123,7 +123,7 @@ public:
 			// Get Dir Entry should not throw
 		}
 
-		return std::vector<std::string>();
+		return std::vector<std::filesystem::directory_entry>();
 	}
 
 	template <typename Callable>
@@ -157,13 +157,13 @@ private:
 		}
 	}
 
-	std::vector<std::string> get_directory_list(std::filesystem::path temp) const
+	std::vector<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
 	{
 		auto di = std::filesystem::directory_iterator(temp);
-		std::vector<std::string> res;
+		std::vector<std::filesystem::directory_entry> res;
 		for (auto &d : di)
 		{
-			res.push_back(d.path().filename().string());
+			res.push_back(d);
 		}
 		return res;
 	}
