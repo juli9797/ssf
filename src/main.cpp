@@ -125,8 +125,14 @@ int main()
 			cmd += tree.get_selected_path();
 			ssf::sys_call(cmd);
 		});
+		//Toggle dotfiles
+                input_handler.register_callback('d', [&]() {
+                	tree.set_hide_dot_files(!tree.get_hide_dot_files());
+                        draw_to_page(page, tree);
+                        screen << page.str();
 
-		ssf::log << "Main keypress loop\n";
+                });
+                ssf::log << "Main keypress loop\n";
 
 		screen << page.str();
 

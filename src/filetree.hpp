@@ -33,12 +33,13 @@ public:
 	}
 	void move_down()
 	{
-          	auto di = std::filesystem::directory_iterator(current_path);
-          	// Sanitize
-          	int dist = std::distance(std::filesystem::begin(di),std::filesystem::end(di));
-          	if (selection < dist - 1) {
-            		selection++;
-	    	}
+		auto dist = get_directory_list(current_path).size();
+		if (selection < dist -1){
+			selection++;
+		}
+		else{
+			selection = dist-1;
+		}
 	}
 	void move_left()
 	{
@@ -116,6 +117,17 @@ public:
 
 		return std::vector<std::filesystem::directory_entry>();
 	}
+	void set_hide_dot_files(bool val){
+		hide_dot_files = val;		
+		//fix selection
+		auto dist = get_directory_list(current_path).size();
+		if(!(selection <= dist - 1)){
+			selection = dist - 1 ;
+		}
+	}
+	auto get_hide_dot_files() -> bool{
+		return hide_dot_files;	
+	}
 
 	template <typename Callable>
 	void set_move_right_on_file_cb(Callable c)
@@ -130,14 +142,15 @@ public:
 	}
 
 private:
-	int selection = 0;
+	unsigned long int selection = 0;
+	bool hide_dot_files = true;
 	std::filesystem::path current_path;
 
 	std::function<void(void)> move_right_on_file;
 
 	std::filesystem::directory_entry get_directory_entry(unsigned sel) const
 	{
-		auto di = std::filesystem::directory_iterator(current_path);
+		/*auto di = std::filesystem::directory_iterator(current_path);
 		if (get_entry_count() > sel)
 		{
 			return *std::next(di, sel);
@@ -145,7 +158,8 @@ private:
 		else
 		{
 			return *di;
-		}
+		}*/
+		return get_directory_list(current_path)[sel];
 	}
 
 	std::vector<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
@@ -154,7 +168,10 @@ private:
 		std::vector<std::filesystem::directory_entry> res;
 		for (auto &d : di)
 		{
-			res.push_back(d);
+			auto comp = d.path().filename().string().at(0);
+			if(comp  != '.' || !hide_dot_files){
+				res.push_back(d);
+			}	
 		}
 		return res;
 	}
