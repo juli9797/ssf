@@ -41,7 +41,7 @@ int main()
 		ssf::Filetree tree;
 
 		ssf::ConsolePage page;
-		page.set_col_width((cols / 3) - 6)
+		page.set_col_width((cols - 3) / 3)
 			.set_spacing(2)
 			.set_row_count(rows - 1);
 

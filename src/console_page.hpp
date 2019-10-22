@@ -81,7 +81,7 @@ public:
                 if ((entry_index == _selection && col_index == _active_col) ||
                     (entry_index == _parent_selection && col_index == _active_col - 1))
                 {
-                    p << c_cmd::color::blue
+                    p << c_cmd::color::background::cyan
                       << entry
                       << c_cmd::color::reset;
                 }
