@@ -46,8 +46,8 @@ public:
 
 		if (current_path.has_parent_path())
 		{
+			selection = get_parent_selection(0);
 			current_path = current_path.parent_path();
-			selection = 0;
 		}
 	}
         void move_right() {
@@ -86,6 +86,26 @@ public:
 	{
 		return selection;
 	}
+	auto get_parent_selection(int i) -> int
+	{
+		int count = 0;
+		auto temp_path=current_path;
+		while(temp_path.has_parent_path()){
+			if(count == i){
+				auto fn = temp_path.filename();
+				auto de = get_directory_list(temp_path.parent_path());
+				for(auto res = 0; res < de.size(); res ++){
+					if(de.at(res).path().filename() == fn){
+						return res;
+					}
+				}
+			}
+			temp_path = temp_path.parent_path();
+			count++;
+		}
+		return 0;	
+	}
+	
 	//and this
 	auto get_left() const
 	{
