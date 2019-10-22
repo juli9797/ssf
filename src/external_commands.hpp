@@ -19,6 +19,12 @@ void sys_call_silent(std::string cmd)
     int ret = system(cmd.c_str());
     static_cast<void>(ret);
 }
+auto enquote(std::string s) -> std::string
+{
+	s.insert(0,1,'\'');
+	s.push_back('\'');
+	return s;
+}
 
 class CommandManager {
 public:

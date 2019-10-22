@@ -87,13 +87,13 @@ int main()
 			screen << page.str();
 		});
 
-		input_handler.register_callback('h', [&]() {
-			tree.move_left();
-			draw_to_page(page, tree);
-			screen << page.str();
-		});
+                input_handler.register_callback('h', [&]() {
+                  tree.move_left();
+                  draw_to_page(page, tree);
+                  screen << page.str();
+                });
 
-		input_handler.register_callback('l', [&]() {
+                input_handler.register_callback('l', [&]() {
 			tree.move_right();
 			draw_to_page(page, tree);
 			screen << page.str();
@@ -103,27 +103,27 @@ int main()
 		// cmd and call logic needs to be implemented elsewhere
 		input_handler.register_callback('s', [&]() {
 			std::string cmd = {"gnome-terminal --working-directory="};
-			cmd += tree.get_current_path();
+			cmd += ssf::enquote(tree.get_current_path().string());
 			ssf::sys_call_silent(cmd);
 		});
                 // Quick and dirty xdg-open
                 input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
-			cmd += tree.get_selected_path();
+			cmd += ssf::enquote(tree.get_selected_path().string());
 			ssf::sys_call(cmd);
 		});
 
 		tree.set_move_right_on_file_cb([&]() {
 			std::string cmd = "xdg-open ";
-			cmd += tree.get_selected_path();
-			ssf::sys_call(cmd);
+                        cmd += ssf::enquote(tree.get_selected_path().string());
+                        ssf::sys_call(cmd);
 		});
 
 		//Quick and dirty vim edit
 		input_handler.register_callback('e', [&]() {
 			std::string cmd = "vim ";
-			cmd += tree.get_selected_path();
-			ssf::sys_call(cmd);
+                        cmd += ssf::enquote(tree.get_selected_path().string());
+                        ssf::sys_call(cmd);
 		});
 		//Toggle dotfiles
                 input_handler.register_callback('d', [&]() {
