@@ -46,7 +46,8 @@ public:
 	void move_left()
 	{
 
-		if (current_path.has_parent_path())
+		if (current_path.has_parent_path() &&
+			current_path != current_path.root_path())
 		{
 			selection = get_parent_selection();
 			current_path = current_path.parent_path();
