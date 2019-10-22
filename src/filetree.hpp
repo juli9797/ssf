@@ -104,10 +104,12 @@ public:
 	{
 		try
 		{
-			auto selected = get_directory_entry(selection);
-			if (selected.is_directory() && !std::filesystem::is_empty(selected))
-			{
-				return get_directory_list(get_selected_path());
+			if(get_directory_list(current_path).size() != 0){
+				auto selected = get_directory_entry(selection);
+				if (selected.is_directory() && !std::filesystem::is_empty(selected))
+				{
+					return get_directory_list(get_selected_path());
+				}
 			}
 		}
 		catch (std::filesystem::filesystem_error &e)
@@ -150,16 +152,7 @@ private:
 
 	std::filesystem::directory_entry get_directory_entry(unsigned sel) const
 	{
-		/*auto di = std::filesystem::directory_iterator(current_path);
-		if (get_entry_count() > sel)
-		{
-			return *std::next(di, sel);
-		}
-		else
-		{
-			return *di;
-		}*/
-		return get_directory_list(current_path)[sel];
+		return get_directory_list(current_path).at(sel);
 	}
 
 	std::vector<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
