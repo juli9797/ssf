@@ -33,14 +33,14 @@ public:
 	}
 	void move_down()
 	{
-		auto dist = get_directory_list(current_path).size();
-		if (selection < dist - 1)
+		auto entry_count = get_entry_count();
+		if (selection < entry_count - 1)
 		{
 			selection++;
 		}
 		else
 		{
-			selection = dist - 1;
+			selection = entry_count - 1;
 		}
 	}
 	void move_left()
@@ -160,10 +160,10 @@ public:
 	{
 		hide_dot_files = val;
 		//fix selection
-		auto dist = get_directory_list(current_path).size();
-		if (!(selection <= dist - 1))
+		auto entry_count = get_entry_count();
+		if (selection >= entry_count)
 		{
-			selection = dist - 1;
+			selection = entry_count - 1;
 		}
 	}
 	auto get_hide_dot_files() -> bool
@@ -179,8 +179,21 @@ public:
 
 	std::size_t get_entry_count() const
 	{
-		auto di = std::filesystem::directory_iterator(current_path);
-		return std::distance(std::filesystem::begin(di), std::filesystem::end(di));
+		auto dir = std::filesystem::directory_iterator(current_path);
+		if (hide_dot_files)
+		{
+
+			return std::count_if(std::filesystem::begin(dir),
+								 std::filesystem::end(dir),
+								 [](auto const &d) {
+									 return d.path().filename().string().at(0) != '.';
+								 });
+		}
+		else
+		{
+			return std::distance(std::filesystem::begin(dir),
+								 std::filesystem::end(dir));
+		}
 	}
 
 private:
