@@ -78,7 +78,8 @@ public:
                 auto dir_entry = col.at(entry_index);
                 auto entry = shortened_string(col.at(entry_index).path().filename().string(), _col_width);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
-                if (entry_index == _selection && col_index == _active_col)
+                if ((entry_index == _selection && col_index == _active_col) ||
+                    (entry_index == _parent_selection && col_index == _active_col - 1))
                 {
                     p << c_cmd::color::blue
                       << entry
@@ -112,6 +113,11 @@ public:
         _selection = s;
     }
 
+    void set_parent_selection(int s)
+    {
+        _parent_selection = s;
+    }
+
     void clear_entries() { entries.resize(0); }
 
 private:
@@ -121,6 +127,7 @@ private:
     unsigned _row_count = 40;
 
     unsigned _selection = 0;
+    unsigned _parent_selection = 0;
     unsigned _active_col = 1;
     std::vector<std::vector<std::filesystem::directory_entry>> entries;
 };

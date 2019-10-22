@@ -17,11 +17,12 @@
 void draw_to_page(ssf::ConsolePage &page, ssf::Filetree &tree)
 {
 	page.clear_entries();
-        page.add_col(tree.get_left());
-        page.add_col(tree.get_current());
-        page.add_col(tree.get_right());
+	page.add_col(tree.get_left());
+	page.add_col(tree.get_current());
+	page.add_col(tree.get_right());
 
-        page.set_selection(tree.get_selection());
+	page.set_selection(tree.get_selection());
+	page.set_parent_selection(tree.get_parent_selection());
 }
 
 int main()
@@ -54,6 +55,7 @@ int main()
 
 		ssf::CommandLine cmd_line;
 		cmd_line.set_row(rows - 1);
+
 		// needs acess to draw function bc it handles user input
 		cmd_line.set_draw_cb([&](std::string s) {
 			screen << s;
@@ -87,13 +89,13 @@ int main()
 			screen << page.str();
 		});
 
-                input_handler.register_callback('h', [&]() {
-                  tree.move_left();
-                  draw_to_page(page, tree);
-                  screen << page.str();
-                });
+		input_handler.register_callback('h', [&]() {
+			tree.move_left();
+			draw_to_page(page, tree);
+			screen << page.str();
+		});
 
-                input_handler.register_callback('l', [&]() {
+		input_handler.register_callback('l', [&]() {
 			tree.move_right();
 			draw_to_page(page, tree);
 			screen << page.str();
@@ -106,8 +108,8 @@ int main()
 			cmd += ssf::enquote(tree.get_current_path().string());
 			ssf::sys_call_silent(cmd);
 		});
-                // Quick and dirty xdg-open
-                input_handler.register_callback('o', [&]() {
+		// Quick and dirty xdg-open
+		input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
 			cmd += ssf::enquote(tree.get_selected_path().string());
 			ssf::sys_call(cmd);
@@ -115,24 +117,23 @@ int main()
 
 		tree.set_move_right_on_file_cb([&]() {
 			std::string cmd = "xdg-open ";
-                        cmd += ssf::enquote(tree.get_selected_path().string());
-                        ssf::sys_call(cmd);
+			cmd += ssf::enquote(tree.get_selected_path().string());
+			ssf::sys_call(cmd);
 		});
 
 		//Quick and dirty vim edit
 		input_handler.register_callback('e', [&]() {
 			std::string cmd = "vim ";
-                        cmd += ssf::enquote(tree.get_selected_path().string());
-                        ssf::sys_call(cmd);
+			cmd += ssf::enquote(tree.get_selected_path().string());
+			ssf::sys_call(cmd);
 		});
 		//Toggle dotfiles
-                input_handler.register_callback('d', [&]() {
-                	tree.set_hide_dot_files(!tree.get_hide_dot_files());
-                        draw_to_page(page, tree);
-                        screen << page.str();
-
-                });
-                ssf::log << "Main keypress loop\n";
+		input_handler.register_callback('d', [&]() {
+			tree.set_hide_dot_files(!tree.get_hide_dot_files());
+			draw_to_page(page, tree);
+			screen << page.str();
+		});
+		ssf::log << "Main keypress loop\n";
 
 		screen << page.str();
 
