@@ -34,11 +34,13 @@ public:
 	void move_down()
 	{
 		auto dist = get_directory_list(current_path).size();
-		if (selection < dist -1){
+		if (selection < dist - 1)
+		{
 			selection++;
 		}
-		else{
-			selection = dist-1;
+		else
+		{
+			selection = dist - 1;
 		}
 	}
 	void move_left()
@@ -46,29 +48,38 @@ public:
 
 		if (current_path.has_parent_path())
 		{
-			selection = get_parent_selection(0);
+			selection = get_parent_selection();
 			current_path = current_path.parent_path();
 		}
 	}
-        void move_right() {
-        	try {
-          		auto selected = get_directory_entry(selection);
-            		if (selected.is_directory()) {
-				 auto probePerm =get_directory_list(get_selected_path()); //probe if filesystem throws permission error 
-             			 current_path = get_selected_path();
-              		selection = 0;
-            		} else if (selected.is_regular_file() || selected.is_character_file()) {
-              			try {
-               		 		move_right_on_file();
-              			} catch (std::bad_function_call &e) {
-              			}
-            		}
-        	 } catch (std::filesystem::filesystem_error &e) {
-         
-	 	}
-        }
+	void move_right()
+	{
+		try
+		{
+			auto selected = get_directory_entry(selection);
+			if (selected.is_directory())
+			{
+				auto probePerm = get_directory_list(get_selected_path()); //probe if filesystem throws permission error
+				current_path = get_selected_path();
+				selection = 0;
+			}
+			else if (selected.is_regular_file() || selected.is_character_file())
+			{
+				try
+				{
+					move_right_on_file();
+				}
+				catch (std::bad_function_call &e)
+				{
+				}
+			}
+		}
+		catch (std::filesystem::filesystem_error &e)
+		{
+		}
+	}
 
-        auto get_selected_path() const -> std::filesystem::path
+	auto get_selected_path() const -> std::filesystem::path
 	{
 		return get_directory_entry(selection).path();
 	}
@@ -86,26 +97,31 @@ public:
 	{
 		return selection;
 	}
-	auto get_parent_selection(int i) -> int
+	auto get_parent_selection() -> int
 	{
-		int count = 0;
-		auto temp_path=current_path;
-		while(temp_path.has_parent_path()){
-			if(count == i){
-				auto fn = temp_path.filename();
-				auto de = get_directory_list(temp_path.parent_path());
-				for(auto res = 0; res < de.size(); res ++){
-					if(de.at(res).path().filename() == fn){
-						return res;
-					}
-				}
+		if (current_path.has_parent_path())
+		{
+			auto parent_dir = get_directory_list(current_path.parent_path());
+			auto dir_name = current_path.filename();
+			auto it = std::find_if(parent_dir.begin(), parent_dir.end(),
+								   [&](std::filesystem::directory_entry &dir) {
+									   return dir.path().filename() == dir_name;
+								   });
+			if (it != parent_dir.end())
+			{
+				return std::distance(parent_dir.begin(), it);
 			}
-			temp_path = temp_path.parent_path();
-			count++;
+			else
+			{
+				return 0;
+			}
 		}
-		return 0;	
+		else
+		{
+			return 0;
+		}
 	}
-	
+
 	//and this
 	auto get_left() const
 	{
@@ -124,7 +140,8 @@ public:
 	{
 		try
 		{
-			if(get_directory_list(current_path).size() != 0){
+			if (get_directory_list(current_path).size() != 0)
+			{
 				auto selected = get_directory_entry(selection);
 				if (selected.is_directory() && !std::filesystem::is_empty(selected))
 				{
@@ -139,16 +156,19 @@ public:
 
 		return std::vector<std::filesystem::directory_entry>();
 	}
-	void set_hide_dot_files(bool val){
-		hide_dot_files = val;		
+	void set_hide_dot_files(bool val)
+	{
+		hide_dot_files = val;
 		//fix selection
 		auto dist = get_directory_list(current_path).size();
-		if(!(selection <= dist - 1)){
-			selection = dist - 1 ;
+		if (!(selection <= dist - 1))
+		{
+			selection = dist - 1;
 		}
 	}
-	auto get_hide_dot_files() -> bool{
-		return hide_dot_files;	
+	auto get_hide_dot_files() -> bool
+	{
+		return hide_dot_files;
 	}
 
 	template <typename Callable>
@@ -182,9 +202,10 @@ private:
 		for (auto &d : di)
 		{
 			auto comp = d.path().filename().string().at(0);
-			if(comp  != '.' || !hide_dot_files){
+			if (comp != '.' || !hide_dot_files)
+			{
 				res.push_back(d);
-			}	
+			}
 		}
 		return res;
 	}
