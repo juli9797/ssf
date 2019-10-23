@@ -22,9 +22,9 @@ public:
     {
     }
 
-    ConsolePage &set_col_width(unsigned val)
+    ConsolePage &set_col_width(unsigned col, unsigned width)
     {
-        _col_width = val;
+        _col_widths.at(col) = width;
         return *this;
     }
 
@@ -45,6 +45,7 @@ public:
         std::ostringstream p;
         p << c_cmd::clear;
         p << c_cmd::hide_cursor;
+
         // iterate over columns
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
@@ -56,6 +57,13 @@ public:
             {
                 entry_offset = std::floor(_selection / _row_count) * _row_count;
             }
+            int current_width = _col_widths.at(col_index);
+            int current_cursor_col = 0;
+            for (unsigned i = 0; i < col_index; i++)
+            {
+                current_cursor_col += _col_widths.at(i);
+                current_cursor_col += _spacing;
+            }
             // Only iterate to either row_count or size of the col
             unsigned limit = std::min((int)(col.size() - entry_offset),
                                       (int)_row_count);
@@ -66,8 +74,8 @@ public:
                 auto dir_entry = col.at(entry_index);
                 auto full_entry = col.at(entry_index).path().filename().string();
                 auto entry = shortened_string(full_entry,
-                                              _col_width - 4);
-                p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
+                                              current_width - 4);
+                p << c_cmd::set_cursor(index, current_cursor_col);
                 p << get_icon(full_entry) << " ";
 
                 if ((entry_index == _selection && col_index == _active_col) ||
@@ -121,6 +129,7 @@ private:
     unsigned _selection = 0;
     unsigned _parent_selection = 0;
     unsigned _active_col = 1;
+    std::array<int, 3> _col_widths;
     std::vector<std::vector<std::filesystem::directory_entry>> entries;
 };
 
