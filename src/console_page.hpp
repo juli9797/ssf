@@ -57,7 +57,15 @@ public:
             {
                 entry_offset = std::floor(_selection / _row_count) * _row_count;
             }
+            // Handle last folder in middle column
             int current_width = _col_widths.at(col_index);
+            if (col_index == 1)
+            {
+                if (entries.at(2).size() == 0)
+                {
+                    current_width += _col_widths[2];
+                }
+            }
             int current_cursor_col = 0;
             for (unsigned i = 0; i < col_index; i++)
             {
