@@ -1,6 +1,5 @@
 #pragma once
 
-#include "console_commands.hpp"
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -9,23 +8,12 @@
 #include <vector>
 
 #include "log.hpp"
+#include "console_commands.hpp"
+#include "string_util.hpp"
+#include "filetype_icon.hpp"
 
 namespace ssf
 {
-
-// Substring throws if length of string is shorter
-// Instead, return unchanged string
-auto shortened_string(std::string s, std::size_t length)
-{
-    if (s.length() < length)
-    {
-        return s;
-    }
-    else
-    {
-        return s.substr(0, length);
-    }
-}
 
 class ConsolePage
 {
@@ -76,8 +64,12 @@ public:
                 // Calculate the actual index for the entry
                 auto entry_index = index + entry_offset;
                 auto dir_entry = col.at(entry_index);
-                auto entry = shortened_string(col.at(entry_index).path().filename().string(), _col_width);
+                auto full_entry = col.at(entry_index).path().filename().string();
+                auto entry = shortened_string(full_entry,
+                                              _col_width - 4);
                 p << c_cmd::set_cursor(index, col_index * (_col_width + _spacing));
+                p << get_icon(full_entry) << " ";
+
                 if ((entry_index == _selection && col_index == _active_col) ||
                     (entry_index == _parent_selection && col_index == _active_col - 1))
                 {

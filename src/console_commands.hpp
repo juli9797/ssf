@@ -26,12 +26,17 @@ constexpr auto reset = "\u001b[0m";
 namespace background
 {
 constexpr auto blue = "\u001b[44m";
+constexpr auto red = "\u001b[41m";
+constexpr auto yellow = "\u001b[43m";
 constexpr auto cyan = "\u001b[46m";
+constexpr auto white = "\u001b[47m";
 constexpr auto bright_cyan = "\u001b[106m";
 } // namespace background
 
 namespace foreground
 {
+constexpr auto red = "\u001b[31m";
+constexpr auto yellow = "\u001b[33m";
 constexpr auto blue = "\u001b[34m";
 constexpr auto bright_magenta = "\u001b[95m";
 constexpr auto bright_cyan = "\u001b[96m";
