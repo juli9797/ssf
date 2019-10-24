@@ -14,7 +14,15 @@ static std::unordered_map<std::string, std::string> icon_colors = {
     {"jpg", c_cmd::color::foreground::blue},
     {"txt", c_cmd::color::foreground::yellow},
     {"pdf", c_cmd::color::foreground::red}};
+static std::vector<std::string> colors = {c_cmd::color::foreground::blue, c_cmd::color::foreground::yellow, c_cmd::color::foreground::red, c_cmd::color::foreground::bright_cyan,c_cmd::color::foreground::bright_magenta};
 
+int get_colorhash(std::string s){
+	auto sum = 0;	
+	for ( std::string::iterator it=s.begin(); it!=s.end(); ++it){
+    		 sum +=(int) *it;
+	}
+	return (sum % colors.size());
+}
 std::string get_icon(std::string file)
 {
     std::ostringstream oss;
@@ -22,16 +30,10 @@ std::string get_icon(std::string file)
     if (index != std::string::npos)
     {
         auto filetype = file.substr(index + 1);
+	std::transform(filetype.begin(), filetype.end(), filetype.begin(),
+    [](unsigned char c){ return std::tolower(c); });
 
-        auto it = icon_colors.find(filetype);
-        if (it != icon_colors.end())
-        {
-            oss << it->second;
-        }
-        else
-        {
-            //oss << c_cmd::color::background::cyan;
-        }
+        oss << colors.at(get_colorhash(filetype));
         auto icon_text = shortened_string(filetype, 3);
         while (icon_text.length() < 3)
         {
