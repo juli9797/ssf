@@ -114,7 +114,7 @@ int main()
 		input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
 			cmd += ssf::enquote(tree.get_selected_path().string());
-			ssf::sys_call(cmd);
+                        ssf::sys_call_silent(cmd);
 		});
 
 		tree.set_move_right_on_file_cb([&]() {
