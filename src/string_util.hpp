@@ -25,5 +25,11 @@ auto to_upper(std::string s)
     std::transform(s.begin(), s.end(), s.begin(), ::toupper);
     return s;
 }
+auto to_lower(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    return s;
+}
+
 
 } // namespace ssf
