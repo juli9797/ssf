@@ -5,27 +5,61 @@
 #include <set>
 #include <string>
 #include <exception>
+#include <type_traits>
+#include <new>
 #include <functional>
 
 #include "log.hpp"
 
 namespace ssf
 {
+/*
+class Selection
+{
+public:
+	Selection();
+	Selection(const std::filesystem::directory_entry &de) : selection(de)
+	{
+	}
+	auto get_selection()
+	{
+		return selection;
+	}
 
+private:
+	const std::filesystem::directory_entry &selection;
+};
+*/
+class Selection
+{
+public:
+	using T = std::filesystem::directory_entry;
+	Selection() {}
+	Selection(T const &d)
+	{
+		new (&storage) T(d);
+		valid = true;
+	}
+	void set_selection(std::filesystem::path const &d)
+	{
+		new (&storage) T(d);
+		valid = true;
+	}
+	T const get_selection() const
+	{
+		if (valid)
+		{
+			return *reinterpret_cast<T const *>(&storage);
+		}
+		else
+		{
+			//throw std::nullptr_t();
+		}
+	}
 
-class Selection{
-	public:
-		Selection();
-		Selection(const std::filesystem::directory_entry & de) : selection(de) 
-		{
-		
-		}
-		auto get_selection()
-		{
-			return selection;
-		}
-	private:
-		const std::filesystem::directory_entry & selection;
+private:
+	std::aligned_storage<sizeof(T), alignof(T)>::type storage;
+	bool valid = false;
 };
 
 class Filetree
@@ -42,17 +76,19 @@ public:
 		//iterate up
 		auto dl = get_directory_list(current_path);
 		auto it = dl.find(selection.get_selection());
-		if(it != dl.begin()){
-			selection = Selection(*(it--));	
-		} 		
+		if (it != dl.begin())
+		{
+			selection.set_selection(*(it--));
+		}
 	}
 	void move_down()
 	{
 		//iterate down
 		auto dl = get_directory_list(current_path);
 		auto it = dl.find(selection.get_selection());
-		if(it != dl.end()){
-			selection = Selection(*(it++));
+		if (it != dl.end())
+		{
+			selection.set_selection(*(it++));
 		}
 	}
 	void move_left()
@@ -61,7 +97,7 @@ public:
 		if (current_path.has_parent_path() &&
 			current_path != current_path.root_path())
 		{
-			selection = Selection(get_parent_selection());
+			selection.set_selection(get_parent_selection());
 			current_path = current_path.parent_path();
 		}
 	}
@@ -110,28 +146,28 @@ public:
 	{
 		return selection.get_selection();
 	}
-	auto get_parent_selection() -> Selection
+	auto get_parent_selection() -> std::filesystem::path
 	{
 		if (current_path.has_parent_path())
 		{
 			auto parent_dir = get_directory_list(current_path.parent_path());
 			auto dir_name = current_path.filename();
 			auto it = std::find_if(parent_dir.begin(), parent_dir.end(),
-								   [&](std::filesystem::directory_entry &dir) {
+								   [&](std::filesystem::directory_entry const &dir) {
 									   return dir.path().filename() == dir_name;
 								   });
 			if (it != parent_dir.end())
 			{
-				return Selection(*it);
+				return *it;
 			}
 			else
 			{
-				return Selection(*parent_dir.end());
+				return *parent_dir.end();
 			}
 		}
 		else
 		{
-			return Selection();
+			return current_path;
 		}
 	}
 
@@ -173,8 +209,7 @@ public:
 	{
 		hide_dot_files = val;
 		//fix selection
-		auto dl = get_directory_list(current_path); 
-		
+		auto dl = get_directory_list(current_path);
 	}
 	auto get_hide_dot_files() -> bool
 	{
@@ -211,10 +246,9 @@ private:
 	std::filesystem::path current_path;
 	std::set<std::filesystem::directory_entry> selection_list;
 	Selection selection;
-	
-	
+
 	std::function<void(void)> move_right_on_file;
-	
+
 	std::set<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
 	{
 		auto di = std::filesystem::directory_iterator(temp);
@@ -228,12 +262,14 @@ private:
 			}
 		}
 		//fix selection
-		if (res.find(selection.get_selection()) == res.end() )
+		// is not const
+		/*
+		if (res.find(selection.get_selection()) == res.end())
 		{
-			selection = Selection(*res.rbegin());
+			selection.set_selection(*res.rbegin());
 		}
+		*/
 		return res;
 	}
 };
-
 } // namespace ssf
