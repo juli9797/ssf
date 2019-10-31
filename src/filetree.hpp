@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <filesystem>
-#include <vector>
+#include <set>
 #include <string>
 #include <exception>
 #include <functional>
@@ -12,9 +12,22 @@
 namespace ssf
 {
 
-//
-// This class is supposed to handle all the filesystem interactions using std::filesystem
-//
+
+class Selection{
+	public:
+		Selection();
+		Selection(const std::filesystem::directory_entry & de) : selection(de) 
+		{
+		
+		}
+		auto get_selection()
+		{
+			return selection;
+		}
+	private:
+		const std::filesystem::directory_entry & selection;
+};
+
 class Filetree
 {
 public:
@@ -26,21 +39,20 @@ public:
 
 	void move_up()
 	{
-		if (selection != 0)
-		{
-			selection--;
-		}
+		//iterate up
+		auto dl = get_directory_list(current_path);
+		auto it = dl.find(selection.get_selection());
+		if(it != dl.begin()){
+			selection = Selection(*(it--));	
+		} 		
 	}
 	void move_down()
 	{
-		auto entry_count = get_entry_count();
-		if (selection < entry_count - 1)
-		{
-			selection++;
-		}
-		else
-		{
-			selection = entry_count - 1;
+		//iterate down
+		auto dl = get_directory_list(current_path);
+		auto it = dl.find(selection.get_selection());
+		if(it != dl.end()){
+			selection = Selection(*(it++));
 		}
 	}
 	void move_left()
@@ -49,7 +61,7 @@ public:
 		if (current_path.has_parent_path() &&
 			current_path != current_path.root_path())
 		{
-			selection = get_parent_selection();
+			selection = Selection(get_parent_selection());
 			current_path = current_path.parent_path();
 		}
 	}
@@ -57,12 +69,12 @@ public:
 	{
 		try
 		{
-			auto selected = get_directory_entry(selection);
+			auto selected = selection.get_selection();
 			if (selected.is_directory())
 			{
 				auto probePerm = get_directory_list(get_selected_path()); //probe if filesystem throws permission error
 				current_path = get_selected_path();
-				selection = 0;
+				selection = *probePerm.begin();
 			}
 			else if (selected.is_regular_file() || selected.is_character_file())
 			{
@@ -82,7 +94,7 @@ public:
 
 	auto get_selected_path() const -> std::filesystem::path
 	{
-		return get_directory_entry(selection).path();
+		return selection.get_selection().path();
 	}
 	//mod this
 	auto get_current() const
@@ -96,9 +108,9 @@ public:
 	}
 	auto get_selection() const
 	{
-		return selection;
+		return selection.get_selection();
 	}
-	auto get_parent_selection() -> int
+	auto get_parent_selection() -> Selection
 	{
 		if (current_path.has_parent_path())
 		{
@@ -110,16 +122,16 @@ public:
 								   });
 			if (it != parent_dir.end())
 			{
-				return std::distance(parent_dir.begin(), it);
+				return Selection(*it);
 			}
 			else
 			{
-				return 0;
+				return Selection(*parent_dir.end());
 			}
 		}
 		else
 		{
-			return 0;
+			return Selection();
 		}
 	}
 
@@ -132,7 +144,7 @@ public:
 		}
 		else
 		{
-			return std::vector<std::filesystem::directory_entry>();
+			return std::set<std::filesystem::directory_entry>();
 		}
 	}
 
@@ -143,7 +155,7 @@ public:
 		{
 			if (get_directory_list(current_path).size() != 0)
 			{
-				auto selected = get_directory_entry(selection);
+				auto selected = selection.get_selection();
 				if (selected.is_directory() && !std::filesystem::is_empty(selected))
 				{
 					return get_directory_list(get_selected_path());
@@ -155,17 +167,14 @@ public:
 			// Get Dir Entry should not throw
 		}
 
-		return std::vector<std::filesystem::directory_entry>();
+		return std::set<std::filesystem::directory_entry>();
 	}
 	void set_hide_dot_files(bool val)
 	{
 		hide_dot_files = val;
 		//fix selection
-		auto entry_count = get_entry_count();
-		if (selection >= entry_count)
-		{
-			selection = entry_count - 1;
-		}
+		auto dl = get_directory_list(current_path); 
+		
 	}
 	auto get_hide_dot_files() -> bool
 	{
@@ -198,28 +207,30 @@ public:
 	}
 
 private:
-	unsigned long int selection = 0;
 	bool hide_dot_files = true;
 	std::filesystem::path current_path;
-
+	std::set<std::filesystem::directory_entry> selection_list;
+	Selection selection;
+	
+	
 	std::function<void(void)> move_right_on_file;
-
-	std::filesystem::directory_entry get_directory_entry(unsigned sel) const
-	{
-		return get_directory_list(current_path).at(sel);
-	}
-
-	std::vector<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
+	
+	std::set<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
 	{
 		auto di = std::filesystem::directory_iterator(temp);
-		std::vector<std::filesystem::directory_entry> res;
+		std::set<std::filesystem::directory_entry> res;
 		for (auto &d : di)
 		{
 			auto comp = d.path().filename().string().at(0);
 			if (comp != '.' || !hide_dot_files)
 			{
-				res.push_back(d);
+				res.insert(d);
 			}
+		}
+		//fix selection
+		if (res.find(selection.get_selection()) == res.end() )
+		{
+			selection = Selection(*res.rbegin());
 		}
 		return res;
 	}

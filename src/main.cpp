@@ -16,13 +16,15 @@
 
 void draw_to_page(ssf::ConsolePage &page, ssf::Filetree &tree)
 {
-	page.clear_entries();
-	page.add_col(tree.get_left());
-	page.add_col(tree.get_current());
-	page.add_col(tree.get_right());
+  /*
+  page.clear_entries();
+  page.add_col(tree.get_left());
+  page.add_col(tree.get_current());
+  page.add_col(tree.get_right());
 
-	page.set_selection(tree.get_selection());
-	page.set_parent_selection(tree.get_parent_selection());
+  page.set_selection(tree.get_selection());
+  page.set_parent_selection(tree.get_parent_selection());
+  */
 }
 
 int main()

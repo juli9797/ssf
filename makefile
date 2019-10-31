@@ -10,3 +10,7 @@ clean:
 	rm $(EXEC)
 	rm src/*.o
 fresh: clean all
+
+install: 
+	cp ssf /bin
+
