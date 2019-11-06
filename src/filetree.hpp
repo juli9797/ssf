@@ -13,21 +13,6 @@ namespace ssf
 {
 
 
-class Selection{
-	public:
-		Selection();
-		Selection(const std::filesystem::directory_entry & de) : selection(de) 
-		{
-		
-		}
-		auto get_selection()
-		{
-			return selection;
-		}
-	private:
-		const std::filesystem::directory_entry & selection;
-};
-
 class Filetree
 {
 public:
@@ -41,18 +26,25 @@ public:
 	{
 		//iterate up
 		auto dl = get_directory_list(current_path);
-		auto it = dl.find(selection.get_selection());
-		if(it != dl.begin()){
-			selection = Selection(*(it--));	
-		} 		
+		if(selection_valid()){
+			auto it = find_element(dl,*selection.begin());
+			if(it != dl.begin()){
+				update_selection(*(--it));	
+			}
+		std::cout << (*selection.begin()).path();
+		}	
+			
 	}
 	void move_down()
 	{
 		//iterate down
 		auto dl = get_directory_list(current_path);
-		auto it = dl.find(selection.get_selection());
-		if(it != dl.end()){
-			selection = Selection(*(it++));
+		if(selection_valid()){
+			auto de = *selection.begin();
+			auto it = find_element(dl,de);
+			if(++it != dl.end()){
+				update_selection(*(it));
+		       	}
 		}
 	}
 	void move_left()
@@ -61,29 +53,32 @@ public:
 		if (current_path.has_parent_path() &&
 			current_path != current_path.root_path())
 		{
-			selection = Selection(get_parent_selection());
-			current_path = current_path.parent_path();
+			auto de = get_parent_selection();
+			update_selection(de);
 		}
 	}
 	void move_right()
 	{
 		try
 		{
-			auto selected = selection.get_selection();
-			if (selected.is_directory())
+			if(selection_valid())
 			{
-				auto probePerm = get_directory_list(get_selected_path()); //probe if filesystem throws permission error
-				current_path = get_selected_path();
-				selection = *probePerm.begin();
-			}
-			else if (selected.is_regular_file() || selected.is_character_file())
-			{
-				try
+				auto selected = *selection.begin();
+				if (selected.is_directory())
 				{
-					move_right_on_file();
+					auto probePerm = get_directory_list(get_selected_path()); //probe if filesystem throws permission error
+					current_path = get_selected_path();
+					update_selection(*probePerm.begin());
 				}
-				catch (std::bad_function_call &e)
+				else if (selected.is_regular_file() || selected.is_character_file())
 				{
+					try
+					{
+						move_right_on_file();
+					}
+					catch (std::bad_function_call &e)
+					{
+					}
 				}
 			}
 		}
@@ -94,10 +89,10 @@ public:
 
 	auto get_selected_path() const -> std::filesystem::path
 	{
-		return selection.get_selection().path();
+		return (*selection.begin()).path();
 	}
 	//mod this
-	auto get_current() const
+	auto get_current() 
 	{
 		return get_directory_list(current_path);
 	}
@@ -108,9 +103,9 @@ public:
 	}
 	auto get_selection() const
 	{
-		return selection.get_selection();
+		return (*selection.begin());
 	}
-	auto get_parent_selection() -> Selection
+	auto get_parent_selection() -> std::filesystem::directory_entry
 	{
 		if (current_path.has_parent_path())
 		{
@@ -122,21 +117,22 @@ public:
 								   });
 			if (it != parent_dir.end())
 			{
-				return Selection(*it);
+				return (*it);
 			}
 			else
 			{
-				return Selection(*parent_dir.end());
+				return (*parent_dir.end());
 			}
 		}
 		else
 		{
-			return Selection();
+			std::filesystem::directory_entry de = {};
+			return de;
 		}
 	}
 
 	//and this
-	auto get_left() const
+	auto get_left() 
 	{
 		if (current_path.has_relative_path())
 		{
@@ -144,18 +140,18 @@ public:
 		}
 		else
 		{
-			return std::set<std::filesystem::directory_entry>();
+			return std::vector<std::filesystem::directory_entry>();
 		}
 	}
 
 	// TODO: Remove cascaded try/catch and multiple default returns
-	auto get_right() const
+	auto get_right() 
 	{
 		try
 		{
 			if (get_directory_list(current_path).size() != 0)
 			{
-				auto selected = selection.get_selection();
+				auto selected = *selection.begin();
 				if (selected.is_directory() && !std::filesystem::is_empty(selected))
 				{
 					return get_directory_list(get_selected_path());
@@ -167,7 +163,7 @@ public:
 			// Get Dir Entry should not throw
 		}
 
-		return std::set<std::filesystem::directory_entry>();
+		return std::vector<std::filesystem::directory_entry>();
 	}
 	void set_hide_dot_files(bool val)
 	{
@@ -187,7 +183,7 @@ public:
 		move_right_on_file = c;
 	}
 
-	std::size_t get_entry_count() const
+	std::size_t get_entry_count() 
 	{
 		auto dir = std::filesystem::directory_iterator(current_path);
 		if (hide_dot_files)
@@ -209,29 +205,47 @@ public:
 private:
 	bool hide_dot_files = true;
 	std::filesystem::path current_path;
-	std::set<std::filesystem::directory_entry> selection_list;
-	Selection selection;
+	std::vector<std::filesystem::directory_entry> selection_list;
+	std::vector<std::filesystem::directory_entry> selection;
 	
 	
 	std::function<void(void)> move_right_on_file;
 	
-	std::set<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp) const
+	bool selection_valid(){
+	
+		return selection.size() == 1;
+	}
+	void update_selection(std::filesystem::directory_entry de){
+		selection.clear();
+		selection.emplace_back(de);	
+	}
+	auto find_element(std::vector<std::filesystem::directory_entry> dl, std::filesystem::directory_entry de) 
+		-> std::vector<std::filesystem::directory_entry>::iterator
+	{
+		auto it = std::find(dl.begin(), dl.end(), de);
+		return it;
+	}
+	std::vector<std::filesystem::directory_entry> get_directory_list(std::filesystem::path temp)
 	{
 		auto di = std::filesystem::directory_iterator(temp);
-		std::set<std::filesystem::directory_entry> res;
+		std::vector<std::filesystem::directory_entry> res;
 		for (auto &d : di)
 		{
 			auto comp = d.path().filename().string().at(0);
 			if (comp != '.' || !hide_dot_files)
 			{
-				res.insert(d);
+				res.push_back(d);
 			}
 		}
 		//fix selection
-		if (res.find(selection.get_selection()) == res.end() )
-		{
-			selection = Selection(*res.rbegin());
+		//if selection not valid and dir not empty, set selection to first element
+		if(!selection_valid() && !res.empty()){
+			update_selection(res.at(0));
 		}
+		/*if (find_element(res,selection[0]) == res.end() )
+		{
+			update_selection(*res.rbegin());
+		}*/
 		return res;
 	}
 };

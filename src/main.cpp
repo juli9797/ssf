@@ -33,12 +33,12 @@ int main()
 	{
 		ssf::log << "Start\n";
 
-		ssf::ConsoleSettings console_settings; // Enables Raw Mode
+                ssf::ConsoleSettings console_settings;  // Enables Raw Mode
 
-		auto cols = console_settings.get_col();
-		auto rows = console_settings.get_row();
+                auto cols = console_settings.get_col();
+                auto rows = console_settings.get_row();
 
-		ssf::ConsoleInputHandler input_handler;
+                ssf::ConsoleInputHandler input_handler;
 
 		ssf::Filetree tree;
 
@@ -83,14 +83,14 @@ int main()
 
 		input_handler.register_callback('j', [&]() {
 			tree.move_down();
-			draw_to_page(page, tree);
-			screen << page.str();
+			//draw_to_page(page, tree);
+			//screen << page.str();
 		});
 
 		input_handler.register_callback('k', [&]() {
 			tree.move_up();
-			draw_to_page(page, tree);
-			screen << page.str();
+                        // draw_to_page(page, tree);
+                        // screen << page.str();
 		});
 
 		input_handler.register_callback('h', [&]() {
