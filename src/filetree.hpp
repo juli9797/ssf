@@ -45,6 +45,7 @@ public:
 			if(++it != dl.end()){
 				update_selection(*(it));
 		       	}
+		std::cout << (*selection.begin()).path();
 		}
 	}
 	void move_left()
@@ -54,6 +55,8 @@ public:
 			current_path != current_path.root_path())
 		{
 			auto de = get_parent_selection();
+			current_path = current_path.parent_path();
+			std::cout<<de.path()<<std::endl;
 			update_selection(de);
 		}
 	}
@@ -66,9 +69,9 @@ public:
 				auto selected = *selection.begin();
 				if (selected.is_directory())
 				{
-					auto probePerm = get_directory_list(get_selected_path()); //probe if filesystem throws permission error
-					current_path = get_selected_path();
-					update_selection(*probePerm.begin());
+					auto probePerm = get_directory_list(selected.path()); //probe if filesystem throws permission error
+					current_path = selected.path();
+					update_selection(*(probePerm.begin()));
 				}
 				else if (selected.is_regular_file() || selected.is_character_file())
 				{
@@ -201,6 +204,10 @@ public:
 								 std::filesystem::end(dir));
 		}
 	}
+	bool selection_valid(){
+	
+		return selection.size() == 1;
+	}
 
 private:
 	bool hide_dot_files = true;
@@ -211,15 +218,12 @@ private:
 	
 	std::function<void(void)> move_right_on_file;
 	
-	bool selection_valid(){
 	
-		return selection.size() == 1;
-	}
 	void update_selection(std::filesystem::directory_entry de){
 		selection.clear();
 		selection.emplace_back(de);	
 	}
-	auto find_element(std::vector<std::filesystem::directory_entry> dl, std::filesystem::directory_entry de) 
+	auto find_element(std::vector<std::filesystem::directory_entry> & dl, std::filesystem::directory_entry de) 
 		-> std::vector<std::filesystem::directory_entry>::iterator
 	{
 		auto it = std::find(dl.begin(), dl.end(), de);
@@ -235,12 +239,13 @@ private:
 			if (comp != '.' || !hide_dot_files)
 			{
 				res.push_back(d);
+				std::cout << d <<std::endl;
 			}
 		}
 		//fix selection
 		//if selection not valid and dir not empty, set selection to first element
 		if(!selection_valid() && !res.empty()){
-			update_selection(res.at(0));
+			update_selection(*res.begin());
 		}
 		/*if (find_element(res,selection[0]) == res.end() )
 		{
