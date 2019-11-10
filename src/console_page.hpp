@@ -49,13 +49,13 @@ public:
         // iterate over columns
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
-            auto col = entries.at(col_index);
+		std::vector<std::filesystem::directory_entry> col = entries.at(col_index);
             // Calculate entry offset in case there are more entries
             // than rows available
             unsigned entry_offset = 0;
-            if (col.size() > _row_count)
+            if (col.size() > _row_count && !_selection.empty())
             {
-                entry_offset = std::floor(_selection / _row_count) * _row_count;
+                entry_offset = std::floor(find_pos(col, *_selection.begin()) / _row_count) * _row_count;
             }
             // Handle last folder in middle column
             int current_width = _col_widths.at(col_index);
@@ -86,8 +86,8 @@ public:
                 p << c_cmd::set_cursor(index, current_cursor_col);
                 p << get_icon(full_entry) << " ";
 
-                if ((entry_index == _selection && col_index == _active_col) ||
-                    (entry_index == _parent_selection && col_index == _active_col - 1))
+                if (!_selection.empty() && (col.at(entry_index) == _selection.at(0) && col_index == _active_col) ||
+                    (!_parent_selection.empty() && col.at(entry_index) == _parent_selection.at(0) && col_index == _active_col - 1))
                 {
                     p << c_cmd::color::background::cyan
                       << entry
@@ -116,17 +116,21 @@ public:
         entries.push_back(c);
     }
 
-    void set_selection(int s)
+    void clear_entries() {
+	    entries.resize(0);
+    }std::filesystem::__cxx11::directory_entr
+    
+    void set_selection(std::filesystem::directory_entry s)
     {
-        _selection = s;
+        _selection.clear();
+	_selection.emplace_back(s);
     }
 
-    void set_parent_selection(int s)
+    void set_parent_selection(std::filesystem::directory_entry s)
     {
-        _parent_selection = s;
+	_parent_selection.clear();
+	_parent_selection.emplace_back(s);	
     }
-
-    void clear_entries() { entries.resize(0); }
 
 private:
     // Settings
@@ -134,11 +138,20 @@ private:
     unsigned _spacing = 2;
     unsigned _row_count = 40;
 
-    unsigned _selection = 0;
-    unsigned _parent_selection = 0;
+    std::vector<std::vector<std::filesystem::directory_entry>>  _selection {};
+    std::vector<std::vector<std::filesystem::directory_entry>> _parent_selection {};
     unsigned _active_col = 1;
     std::array<int, 3> _col_widths;
     std::vector<std::vector<std::filesystem::directory_entry>> entries;
+   
+    auto find_pos(const std::vector<std::filesystem::directory_entry> & dl, std::filesystem::directory_entry de) const
+		-> std::size_t
+    {
+		auto it = std::find(dl.begin(), dl.end(), de);
+		auto dist = 0;
+	        dist = std::distance(dl.begin(),it);
+		return dist;
+	}
 };
 
 } // namespace ssf
