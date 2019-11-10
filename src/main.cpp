@@ -16,15 +16,13 @@
 
 void draw_to_page(ssf::ConsolePage &page, ssf::Filetree &tree)
 {
-  /*
-  page.clear_entries();
-  page.add_col(tree.get_left());
-  page.add_col(tree.get_current());
-  page.add_col(tree.get_right());
+	page.clear_entries();
+	page.add_col(tree.get_left());
+	page.add_col(tree.get_current());
+	page.add_col(tree.get_right());
 
-  page.set_selection(tree.get_selection());
-  page.set_parent_selection(tree.get_parent_selection());
-  */
+	page.set_selection(tree.get_selection());
+	page.set_parent_selection(tree.get_parent_selection());
 }
 
 int main()
@@ -33,12 +31,12 @@ int main()
 	{
 		ssf::log << "Start\n";
 
-                ssf::ConsoleSettings console_settings;  // Enables Raw Mode
+		ssf::ConsoleSettings console_settings; // Enables Raw Mode
 
-                auto cols = console_settings.get_col();
-                auto rows = console_settings.get_row();
+		auto cols = console_settings.get_col();
+		auto rows = console_settings.get_row();
 
-                ssf::ConsoleInputHandler input_handler;
+		ssf::ConsoleInputHandler input_handler;
 
 		ssf::Filetree tree;
 
@@ -83,14 +81,14 @@ int main()
 
 		input_handler.register_callback('j', [&]() {
 			tree.move_down();
-			//draw_to_page(page, tree);
-			//screen << page.str();
+			draw_to_page(page, tree);
+			screen << page.str();
 		});
 
 		input_handler.register_callback('k', [&]() {
 			tree.move_up();
-                        // draw_to_page(page, tree);
-                        // screen << page.str();
+			draw_to_page(page, tree);
+			screen << page.str();
 		});
 
 		input_handler.register_callback('h', [&]() {
@@ -116,7 +114,7 @@ int main()
 		input_handler.register_callback('o', [&]() {
 			std::string cmd = "xdg-open ";
 			cmd += ssf::enquote(tree.get_selected_path().string());
-                        ssf::sys_call_silent(cmd);
+			ssf::sys_call_silent(cmd);
 		});
 
 		tree.set_move_right_on_file_cb([&]() {

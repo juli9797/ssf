@@ -19,7 +19,7 @@ public:
         tcgetattr(STDIN_FILENO, &saved_settings); // Save settings to restore later
 
         auto new_settings = saved_settings;
-/*
+
         // Flags from https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
         new_settings.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
         new_settings.c_oflag &= ~(OPOST);
@@ -28,7 +28,7 @@ public:
         new_settings.c_cc[VMIN] = 1;  // 1 Byte
         new_settings.c_cc[VTIME] = 1; // 100ms
 
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_settings);*/
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_settings);
     }
 
     int get_col()
