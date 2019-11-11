@@ -20,32 +20,31 @@ public:
 	{
 		log << "init path: " << std::filesystem::current_path() << "\n";
 		current_path = std::filesystem::absolute(std::filesystem::current_path());
+		update();
 	}
 
 	void move_up()
 	{
 		//iterate up
-		auto dl = get_directory_list(current_path);
-		if(selection_valid()){
-			auto it = find_element(dl,*selection.begin());
-			if(it != dl.begin()){
+		update();
+		if(!selection.empty()){
+			auto it = find_element(active_col,*selection.begin());
+			if(it != active_col.begin()){
 				update_selection(*(--it));	
 			}
-		std::cout << (*selection.begin()).path();
 		}	
 			
 	}
 	void move_down()
 	{
 		//iterate down
-		auto dl = get_directory_list(current_path);
-		if(selection_valid()){
+		update();
+		if(!selection.empty()){
 			auto de = *selection.begin();
-			auto it = find_element(dl,de);
-			if(++it != dl.end()){
+			auto it = find_element(active_col,de);
+			if(++it != active_col.end()){
 				update_selection(*(it));
 		       	}
-		std::cout << (*selection.begin()).path();
 		}
 	}
 	void move_left()
@@ -54,24 +53,28 @@ public:
 		if (current_path.has_parent_path() &&
 			current_path != current_path.root_path())
 		{
-			auto de = get_parent_selection();
 			current_path = current_path.parent_path();
-			std::cout<<de.path()<<std::endl;
-			update_selection(de);
+			if(!parent_selection.empty()){
+				update_selection(parent_selection.at(0));
+			}
+			update();
 		}
 	}
 	void move_right()
 	{
 		try
 		{
-			if(selection_valid())
+			if(!selection.empty())
 			{
 				auto selected = *selection.begin();
 				if (selected.is_directory())
 				{
+					//THIS IS A DIRTY HACK AND SHOULD BE DONE PROPERLY ASAP
 					auto probePerm = get_directory_list(selected.path()); //probe if filesystem throws permission error
+
 					current_path = selected.path();
 					update_selection(*(probePerm.begin()));
+				
 				}
 				else if (selected.is_regular_file() || selected.is_character_file())
 				{
@@ -88,16 +91,18 @@ public:
 		catch (std::filesystem::filesystem_error &e)
 		{
 		}
+		update();
 	}
-
+	//SHOULD BE PRIVATE IN FUTURE! get_selection contains all necessary information!
+	//will keep it for now bc main.cpp depends on it -Julian
 	auto get_selected_path() const -> std::filesystem::path
 	{
 		return (*selection.begin()).path();
 	}
-	//mod this
+	
 	auto get_current() 
 	{
-		return get_directory_list(current_path);
+		return active_col;
 	}
 
 	auto get_current_path() const
@@ -106,74 +111,29 @@ public:
 	}
 	auto get_selection() const
 	{
-		return (*selection.begin());
+		return selection;
 	}
-	auto get_parent_selection() -> std::filesystem::directory_entry
+	auto get_parent_selection()-> std::vector<std::filesystem::directory_entry>
 	{
-		if (current_path.has_parent_path())
-		{
-			auto parent_dir = get_directory_list(current_path.parent_path());
-			auto dir_name = current_path.filename();
-			auto it = std::find_if(parent_dir.begin(), parent_dir.end(),
-								   [&](std::filesystem::directory_entry &dir) {
-									   return dir.path().filename() == dir_name;
-								   });
-			if (it != parent_dir.end())
-			{
-				return (*it);
-			}
-			else
-			{
-				return (*parent_dir.end());
-			}
-		}
-		else
-		{
-			std::filesystem::directory_entry de = {};
-			return de;
-		}
+		return parent_selection;
 	}
 
 	//and this
 	auto get_left() 
 	{
-		if (current_path.has_relative_path())
-		{
-			return get_directory_list(current_path.parent_path());
-		}
-		else
-		{
-			return std::vector<std::filesystem::directory_entry>();
-		}
+	
+		return left_col;
 	}
 
 	// TODO: Remove cascaded try/catch and multiple default returns
 	auto get_right() 
 	{
-		try
-		{
-			if (get_directory_list(current_path).size() != 0)
-			{
-				auto selected = *selection.begin();
-				if (selected.is_directory() && !std::filesystem::is_empty(selected))
-				{
-					return get_directory_list(get_selected_path());
-				}
-			}
-		}
-		catch (std::filesystem::filesystem_error &e)
-		{
-			// Get Dir Entry should not throw
-		}
-
-		return std::vector<std::filesystem::directory_entry>();
+		return right_col;
 	}
 	void set_hide_dot_files(bool val)
 	{
 		hide_dot_files = val;
-		//fix selection
-		auto dl = get_directory_list(current_path); 
-		
+		update();
 	}
 	auto get_hide_dot_files() -> bool
 	{
@@ -185,10 +145,12 @@ public:
 	{
 		move_right_on_file = c;
 	}
-
+	
+	//DEPRECATED
+	/*
 	std::size_t get_entry_count() 
 	{
-		auto dir = std::filesystem::directory_iterator(current_path);
+		auto dir = active_col;
 		if (hide_dot_files)
 		{
 
@@ -203,26 +165,109 @@ public:
 			return std::distance(std::filesystem::begin(dir),
 								 std::filesystem::end(dir));
 		}
-	}
+	a}*/
 	bool selection_valid(){
 	
 		return selection.size() == 1;
 	}
+	void update(){
+		//active Column
+		active_col = get_directory_list(current_path);
+		check_selection();
+		//left Column
+		if (current_path.has_relative_path())
+		{
+			left_col = get_directory_list(current_path.parent_path());
+		}
+		else
+		{
+			left_col.clear();	
+		}
+		check_parent_selection();
+		//right Column
+		try
+		{
+			if (active_col.size() != 0 && !selection.empty())
+			{
+				auto selected = *selection.begin();
+				if (selected.is_directory() && !std::filesystem::is_empty(selected))
+				{
+					right_col = get_directory_list(get_selected_path());
+				}
+			}
+		}
+		catch (std::filesystem::filesystem_error &e)
+		{
+		}		
+	}
 
 private:
+	//state variables
 	bool hide_dot_files = true;
 	std::filesystem::path current_path;
-	std::vector<std::filesystem::directory_entry> selection_list;
+
+	//primary selections
 	std::vector<std::filesystem::directory_entry> selection;
+	std::vector<std::filesystem::directory_entry> parent_selection;
 	
+	//secondary selection
+	std::vector<std::filesystem::directory_entry> selection_list;
+
+	//colums
+	std::vector<std::filesystem::directory_entry> left_col;
+	std::vector<std::filesystem::directory_entry> active_col;
+	std::vector<std::filesystem::directory_entry> right_col;
 	
 	std::function<void(void)> move_right_on_file;
-	
-	
+	/*
+	 *selection helper functions
+	 */	
+	void check_selection(){
+		//check if not valid
+		if(!selection.empty()){
+			if(find_element(active_col, selection.at(0)) == active_col.end()){
+				selection.clear();			
+			}
+		}
+		//default to first entry if possible
+		if(selection.empty() && !active_col.empty()){
+			update_selection(*active_col.begin());
+		}
+		
+	}
+	void check_parent_selection(){
+		if (current_path.has_parent_path())
+		{
+			auto parent_dir = left_col;
+			auto dir_name = current_path.filename();
+			auto it = std::find_if(parent_dir.begin(), parent_dir.end(),
+								   [&](std::filesystem::directory_entry &dir) {
+									   return dir.path().filename() == dir_name;
+								   });
+			if (it != parent_dir.end())
+			{
+				update_parent_selection(*it);
+			}
+			else
+			{
+				//This case should not happen but whooo knows...
+				parent_selection.clear();	
+			}
+		}
+		else
+		{
+			parent_selection.clear();
+		}
+	}
 	void update_selection(std::filesystem::directory_entry de){
 		selection.clear();
 		selection.emplace_back(de);	
 	}
+	void update_parent_selection(std::filesystem::directory_entry de){
+		parent_selection.clear();
+		parent_selection.emplace_back(de);	
+	}
+
 	auto find_element(std::vector<std::filesystem::directory_entry> & dl, std::filesystem::directory_entry de) 
 		-> std::vector<std::filesystem::directory_entry>::iterator
 	{
@@ -242,15 +287,6 @@ private:
 				std::cout << d <<std::endl;
 			}
 		}
-		//fix selection
-		//if selection not valid and dir not empty, set selection to first element
-		if(!selection_valid() && !res.empty()){
-			update_selection(*res.begin());
-		}
-		/*if (find_element(res,selection[0]) == res.end() )
-		{
-			update_selection(*res.rbegin());
-		}*/
 		return res;
 	}
 };
