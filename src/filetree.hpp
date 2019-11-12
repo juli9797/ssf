@@ -26,19 +26,18 @@ public:
 	void move_up()
 	{
 		//iterate up
-		update();
 		if(!selection.empty()){
 			auto it = find_element(active_col,*selection.begin());
 			if(it != active_col.begin()){
 				update_selection(*(--it));	
 			}
 		}	
+		update();
 			
 	}
 	void move_down()
 	{
 		//iterate down
-		update();
 		if(!selection.empty()){
 			auto de = *selection.begin();
 			auto it = find_element(active_col,de);
@@ -46,6 +45,7 @@ public:
 				update_selection(*(it));
 		       	}
 		}
+		update();
 	}
 	void move_left()
 	{
@@ -57,8 +57,8 @@ public:
 			if(!parent_selection.empty()){
 				update_selection(parent_selection.at(0));
 			}
-			update();
 		}
+		update();
 	}
 	void move_right()
 	{
@@ -171,6 +171,10 @@ public:
 		return selection.size() == 1;
 	}
 	void update(){
+		//reset
+		active_col.clear();
+		left_col.clear();
+		right_col.clear();
 		//active Column
 		active_col = get_directory_list(current_path);
 		check_selection();
@@ -178,10 +182,6 @@ public:
 		if (current_path.has_relative_path())
 		{
 			left_col = get_directory_list(current_path.parent_path());
-		}
-		else
-		{
-			left_col.clear();	
 		}
 		check_parent_selection();
 		//right Column
@@ -284,7 +284,6 @@ private:
 			if (comp != '.' || !hide_dot_files)
 			{
 				res.push_back(d);
-				std::cout << d <<std::endl;
 			}
 		}
 		return res;

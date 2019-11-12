@@ -41,13 +41,13 @@ int main()
 		ssf::Filetree tree;
 
 		ssf::ConsolePage page;
-		page.set_col_width(0, (cols - 6) * 0.2)
-			.set_col_width(1, (cols - 6) * 0.25)
-			.set_col_width(2, (cols - 6) * 0.55)
-			.set_spacing(2)
-			.set_row_count(rows - 1);
+                page.set_col_width(0, (cols - 6) * 0.2)
+                    .set_col_width(1, (cols - 6) * 0.25)
+                    .set_col_width(2, (cols - 6) * 0.55)
+                    .set_spacing(2)
+                    .set_row_count(rows - 1);
 
-		draw_to_page(page, tree);
+                draw_to_page(page, tree);
 
 		ssf::ConsoleScreen screen;
 		screen.set_post_draw_callback([&]() {
