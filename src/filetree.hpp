@@ -73,7 +73,9 @@ public:
 					auto probePerm = get_directory_list(selected.path()); //probe if filesystem throws permission error
 
 					current_path = selected.path();
-					update_selection(*(probePerm.begin()));
+					if(!probePerm.empty()){
+						update_selection(*(probePerm.begin()));
+					}
 				
 				}
 				else if (selected.is_regular_file() || selected.is_character_file())
