@@ -93,7 +93,7 @@ public:
                 if (!_selection.empty() && (col.at(entry_index) == _selection.at(0) && col_index == _active_col) ||
                     (!_parent_selection.empty() && col.at(entry_index) == _parent_selection.at(0) && col_index == _active_col - 1))
                 {
-                    p << c_cmd::color::background::cyan
+                    p << ((col_index == 0) ? c_cmd::color::background::bright_black: c_cmd::color::background::cyan)
                       << entry
                       << c_cmd::color::reset;
                 }

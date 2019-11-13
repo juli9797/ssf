@@ -31,6 +31,8 @@ constexpr auto yellow = "\u001b[43m";
 constexpr auto cyan = "\u001b[46m";
 constexpr auto white = "\u001b[47m";
 constexpr auto bright_cyan = "\u001b[106m";
+constexpr auto bright_magenta= "\u001b[105m";
+constexpr auto bright_black= "\u001b[100m";
 } // namespace background
 
 namespace foreground
