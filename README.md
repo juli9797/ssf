@@ -1,4 +1,4 @@
-# ssf ( S U P E R     S I M P L E     F I L E explorer xD)
+# S U P E R     S I M P L E     F I L E E X P L O R E R
 
 ![ssf gif here](demo.gif)
 
@@ -19,15 +19,15 @@
 ## Build Requirements   
 * g++ version 9+
 
-## Dependencies   
-* gnome-terminal
-* xdg-open
-* vim
+## Optional dependencies   
+* gnome-terminal ('s')
+* xdg-open ('o')
+* vim	('e')
 
 ## Installation   
 
 1) `git clone https://github.com/juli9797/ssf`
 2) `make install`
-
+3) `ssf`
 
 

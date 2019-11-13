@@ -120,7 +120,7 @@ int main()
 		tree.set_move_right_on_file_cb([&]() {
 			std::string cmd = "xdg-open ";
 			cmd += ssf::enquote(tree.get_selected_path().string());
-			ssf::sys_call(cmd);
+                        ssf::sys_call_silent(cmd);
 		});
 
 		//Quick and dirty vim edit
