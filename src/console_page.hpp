@@ -49,16 +49,15 @@ public:
         // iterate over columns
         for (auto col_index = 0u; col_index < entries.size(); col_index++)
         {
-		if(col_index == _active_col){
-		
-			std::cout << "LOL" << std::endl ;	
-		
-		}
             std::vector<std::filesystem::directory_entry> col = entries.at(col_index);
             // Calculate entry offset in case there are more entries
             // than rows available
             unsigned entry_offset = 0;
-            if (col.size() > _row_count && !_selection.empty())
+            if (col_index == _active_col-1 && col.size() > _row_count && !_parent_selection.empty())
+            {
+                entry_offset = std::floor(find_pos(col, *_parent_selection.begin()) / _row_count) * _row_count;
+            }
+	    else if (col_index == _active_col && col.size() > _row_count && !_selection.empty())
             {
                 entry_offset = std::floor(find_pos(col, *_selection.begin()) / _row_count) * _row_count;
             }
