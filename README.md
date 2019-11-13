@@ -1,5 +1,4 @@
 # ssf ( S U P E R     S I M P L E     F I L E explorer xD)
-Terminal based file explorer (not quite a manager)
 
 ![ssf gif here](demo.gif)
 
