@@ -3,7 +3,7 @@ OBJECTS = src/main.o src/log.o
 OBJECTS_TEST = src/main_test.o src/log.o
 EXEC = ssf
 CXXFLAGS = -Wall -Wextra -std=c++2a -ggdb 
-CXXFLAGS = -Wall -Wextra -std=c++2a --static 
+CXXFLAGS = -Wall -Wextra -std=c++2a -static 
 CXX = g++
 
 all: clean $(OBJECTS)
