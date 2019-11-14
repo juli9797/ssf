@@ -12,7 +12,6 @@
 namespace ssf
 {
 
-
 class Filetree
 {
 public:
@@ -26,24 +25,27 @@ public:
 	void move_up()
 	{
 		//iterate up
-		if(!selection.empty()){
-			auto it = find_element(active_col,*selection.begin());
-			if(it != active_col.begin()){
-				update_selection(*(--it));	
+		if (!selection.empty())
+		{
+			auto it = find_element(active_col, *selection.begin());
+			if (it != active_col.begin())
+			{
+				update_selection(*(--it));
 			}
-		}	
+		}
 		update();
-			
 	}
 	void move_down()
 	{
 		//iterate down
-		if(!selection.empty()){
+		if (!selection.empty())
+		{
 			auto de = *selection.begin();
-			auto it = find_element(active_col,de);
-			if(++it != active_col.end()){
+			auto it = find_element(active_col, de);
+			if (++it != active_col.end())
+			{
 				update_selection(*(it));
-		       	}
+			}
 		}
 		update();
 	}
@@ -54,7 +56,8 @@ public:
 			current_path != current_path.root_path())
 		{
 			current_path = current_path.parent_path();
-			if(!parent_selection.empty()){
+			if (!parent_selection.empty())
+			{
 				update_selection(parent_selection.at(0));
 			}
 		}
@@ -64,7 +67,7 @@ public:
 	{
 		try
 		{
-			if(!selection.empty())
+			if (!selection.empty())
 			{
 				auto selected = *selection.begin();
 				if (selected.is_directory())
@@ -73,10 +76,10 @@ public:
 					auto probePerm = get_directory_list(selected.path()); //probe if filesystem throws permission error
 
 					current_path = selected.path();
-					if(!probePerm.empty()){
+					if (!probePerm.empty())
+					{
 						update_selection(*(probePerm.begin()));
 					}
-				
 				}
 				else if (selected.is_regular_file() || selected.is_character_file())
 				{
@@ -101,8 +104,8 @@ public:
 	{
 		return (*selection.begin()).path();
 	}
-	
-	auto get_current() 
+
+	auto get_current()
 	{
 		return active_col;
 	}
@@ -115,20 +118,19 @@ public:
 	{
 		return selection;
 	}
-	auto get_parent_selection()-> std::vector<std::filesystem::directory_entry>
+	auto get_parent_selection() -> std::vector<std::filesystem::directory_entry>
 	{
 		return parent_selection;
 	}
 
 	//and this
-	auto get_left() 
+	auto get_left()
 	{
-	
 		return left_col;
 	}
 
 	// TODO: Remove cascaded try/catch and multiple default returns
-	auto get_right() 
+	auto get_right()
 	{
 		return right_col;
 	}
@@ -147,7 +149,7 @@ public:
 	{
 		move_right_on_file = c;
 	}
-	
+
 	//DEPRECATED
 	/*
 	std::size_t get_entry_count() 
@@ -168,11 +170,13 @@ public:
 								 std::filesystem::end(dir));
 		}
 	a}*/
-	bool selection_valid(){
-	
+	bool selection_valid()
+	{
+
 		return selection.size() == 1;
 	}
-	void update(){
+	void update()
+	{
 		//reset
 		active_col.clear();
 		left_col.clear();
@@ -200,7 +204,7 @@ public:
 		}
 		catch (std::filesystem::filesystem_error &e)
 		{
-		}		
+		}
 	}
 
 private:
@@ -211,7 +215,7 @@ private:
 	//primary selections
 	std::vector<std::filesystem::directory_entry> selection;
 	std::vector<std::filesystem::directory_entry> parent_selection;
-	
+
 	//secondary selection
 	std::vector<std::filesystem::directory_entry> selection_list;
 
@@ -219,25 +223,29 @@ private:
 	std::vector<std::filesystem::directory_entry> left_col;
 	std::vector<std::filesystem::directory_entry> active_col;
 	std::vector<std::filesystem::directory_entry> right_col;
-	
+
 	std::function<void(void)> move_right_on_file;
 	/*
 	 *selection helper functions
-	 */	
-	void check_selection(){
+	 */
+	void check_selection()
+	{
 		//check if not valid
-		if(!selection.empty()){
-			if(find_element(active_col, selection.at(0)) == active_col.end()){
-				selection.clear();			
+		if (!selection.empty())
+		{
+			if (find_element(active_col, selection.at(0)) == active_col.end())
+			{
+				selection.clear();
 			}
 		}
 		//default to first entry if possible
-		if(selection.empty() && !active_col.empty()){
+		if (selection.empty() && !active_col.empty())
+		{
 			update_selection(*active_col.begin());
 		}
-		
 	}
-	void check_parent_selection(){
+	void check_parent_selection()
+	{
 		if (current_path.has_parent_path())
 		{
 			auto parent_dir = left_col;
@@ -253,7 +261,7 @@ private:
 			else
 			{
 				//This case should not happen but whooo knows...
-				parent_selection.clear();	
+				parent_selection.clear();
 			}
 		}
 		else
@@ -261,16 +269,18 @@ private:
 			parent_selection.clear();
 		}
 	}
-	void update_selection(std::filesystem::directory_entry de){
+	void update_selection(std::filesystem::directory_entry de)
+	{
 		selection.clear();
-		selection.emplace_back(de);	
+		selection.emplace_back(de);
 	}
-	void update_parent_selection(std::filesystem::directory_entry de){
+	void update_parent_selection(std::filesystem::directory_entry de)
+	{
 		parent_selection.clear();
-		parent_selection.emplace_back(de);	
+		parent_selection.emplace_back(de);
 	}
 
-	auto find_element(std::vector<std::filesystem::directory_entry> & dl, std::filesystem::directory_entry de) 
+	auto find_element(std::vector<std::filesystem::directory_entry> &dl, std::filesystem::directory_entry de)
 		-> std::vector<std::filesystem::directory_entry>::iterator
 	{
 		auto it = std::find(dl.begin(), dl.end(), de);
