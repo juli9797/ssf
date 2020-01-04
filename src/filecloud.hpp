@@ -103,7 +103,7 @@ class FilesystemSnapshot{
 				log << e.what() << "\n";  	
 			}
 			//update left
-			
+						
 			//update right
 
 
